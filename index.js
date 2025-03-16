@@ -45,9 +45,8 @@ io.on('connection', (socket) => {
 
 
 
-
 app.get('/', (req, res) => {
-  res.send('Pay Nova Server is running');
+  res.send('Xynexa Server is running');
 });
 app.listen(process.env.PORT, () => {
     console.log(`Server is running on port ${process.env.PORT}`)
