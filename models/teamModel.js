@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const TeamSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
-    members: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // Users in the team
+    members: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // Users in the team -AShraful
   },
   { timestamps: true, versionKey: false }
 );
