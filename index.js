@@ -8,6 +8,7 @@ const cors = require('cors');
 
 // import routes
 const userRoutes = require('./routes/userRoutes');
+const messageRoutes = require('./routes/messageRoutes');
 
 
 dotenv.config();
@@ -46,6 +47,7 @@ io.on('connection', (socket) => {
 
 // Define Routes here
 app.use("/api", userRoutes);
+app.use("/api", messageRoutes);
 
 
 app.get('/', (req, res) => {
