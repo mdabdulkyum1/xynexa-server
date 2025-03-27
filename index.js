@@ -1,56 +1,50 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const connectDB = require('./config/db');
-const dotenv = require('dotenv');
-const http = require('http');
-const { Server } = require('socket.io');
-const cors = require('cors');
+import express from 'express';
+import mongoose from 'mongoose';
+import connectDB from './config/db.js';
+import dotenv from 'dotenv';
+import http from 'http';
+import { Server } from 'socket.io';
+import cors from 'cors';
 
 // import routes
-const userRoutes = require('./routes/userRoutes');
-
+import userRoutes from './routes/userRoutes.js';
+import teamRoutes from './routes/teamRoutes.js'; 
 
 dotenv.config();
 
-// Initialize Express App
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: {
-    origin: '*', 
-  },
+    cors: {
+        origin: '*',
+    },
 });
 
-// Connect to MongoDB
 connectDB();
 
 app.use(express.json());
 app.use(cors());
 
-// Handle WebSocket Connection
 io.on('connection', (socket) => {
-  console.log('New client connected:', socket.id);
+    console.log('New client connected:', socket.id);
 
-  socket.on('message', (data) => {
-    console.log('Received:', data);
+    socket.on('message', (data) => {
+        console.log('Received:', data);
+        io.emit('message', data);
+    });
 
-    // Broadcast to all clients
-    io.emit('message', data);
-  });
-
-  socket.on('disconnect', () => {
-    console.log('Client disconnected:', socket.id);
-  });
+    socket.on('disconnect', () => {
+        console.log('Client disconnected:', socket.id);
+    });
 });
 
-
-// Define Routes here
 app.use("/api", userRoutes);
-
+app.use('/api/teams', teamRoutes);
 
 app.get('/', (req, res) => {
-  res.send('Xynexa Server is running');
+    res.send('Xynexa Server is running');
 });
-app.listen(process.env.PORT, () => {
-    console.log(`Server is running on port ${process.env.PORT}`)
-  })
+
+server.listen(process.env.PORT, () => {
+    console.log(`Server is running on port ${process.env.PORT}`);
+});
