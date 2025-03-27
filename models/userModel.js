@@ -8,9 +8,9 @@ const userSchema = new mongoose.Schema({
   role: { type: String, enum: ['user', 'agent',], default: 'user' },
   nid: { type: String, required: true, unique: true },
   photoURL: { type: String, default: null },
-  session: { type: String, default: null }, // Stores active session
-  amount: { type: Number, default: 0 }, // Account balance
-  isBlocked: { type: Boolean, default: false } // Admin can block a user/agent
+  session: { type: String, default: null }, 
+  amount: { type: Number, default: 0 }, 
+  isBlocked: { type: Boolean, default: false } 
 }, { timestamps: true, versionKey: false });
 
 const User = mongoose.model('User', userSchema);
