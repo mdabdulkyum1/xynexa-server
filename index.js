@@ -6,6 +6,9 @@ const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
 
+// import routes
+const userRoutes = require('./routes/userRoutes');
+
 
 dotenv.config();
 
@@ -42,7 +45,7 @@ io.on('connection', (socket) => {
 
 
 // Define Routes here
-
+app.use("/api", userRoutes);
 
 
 app.get('/', (req, res) => {
