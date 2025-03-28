@@ -1,45 +1,57 @@
-const User = require("../models/userModel");
+import User from '../models/userModel.js'; // Import User model
 
 // Register User (Set Online by Default)
-const registerUser = async (req, res) => {
-  try {
-    const { clerkId, firstName, lastName, email, imageUrl } = req.body;
+export const registerUser = async (req, res) => {
+    try {
+        const { clerkId, firstName, lastName, email, imageUrl } = req.body;
 
-    // Validate required fields
-    if (!clerkId || !email) {
-      return res.status(400).json({ message: "Clerk ID and Email are required!" });
+        // Validate required fields
+        if (!clerkId || !email) {
+            return res.status(400).json({ message: "Clerk ID and Email are required!" });
+        }
+
+        // Check if user already exists by clerkId or email
+        const existingUser = await User.findOne({ $or: [{ clerkId }, { email }] });
+
+        if (existingUser) {
+            const errorMessage = existingUser.clerkId === clerkId
+                ? "User already exists with this Clerk ID"
+                : "User already exists with this Email";
+
+            return res.status(400).json({ message: errorMessage });
+        }
+
+        // Create new user
+        const newUser = new User({
+            clerkId,
+            firstName,
+            lastName,
+            email,
+            imageUrl,
+            role: "member",
+            status: "Online", // Set user to Online upon registration
+            lastActive: new Date(),
+        });
+
+        // Save user to the database
+        await newUser.save();
+
+        return res.status(201).json({ message: "User registered successfully", user: newUser });
+    } catch (error) {
+        console.error("Error registering user:", error);
+
+        // Handle MongoDB duplicate key error
+        if (error.code === 11000) {
+            return res.status(400).json({ message: `Duplicate key error: ${JSON.stringify(error.keyValue)}` });
+        }
+
+        return res.status(500).json({ message: "Server error. Please try again later." });
     }
-
-    // Check if user already exists
-    let user = await User.findOne({ clerkId });
-
-    if (user) {
-      return res.status(400).json({ message: "User already exists" });
-    }
-
-    // Create and Save New User
-    user = new User({
-      clerkId,
-      firstName,
-      lastName,
-      email,
-      imageUrl,
-      role: "member",
-      status: "Online", // Set user to Online upon registration
-      lastActive: new Date(),
-    });
-
-    await user.save();
-
-    return res.status(201).json({ message: "User registered successfully", user });
-  } catch (error) {
-    console.error("Error registering user:", error);
-    return res.status(500).json({ message: "Server error. Please try again later." });
-  }
 };
 
+
 // User Login (Set Online)
-const loginUser = async (req, res) => {
+export const loginUser = async (req, res) => {
   try {
     const { clerkId } = req.body;
 
@@ -62,7 +74,7 @@ const loginUser = async (req, res) => {
 };
 
 // User Logout (Set Offline)
-const logoutUser = async (req, res) => {
+export const logoutUser = async (req, res) => {
   try {
     const { clerkId } = req.body;
 
@@ -85,7 +97,7 @@ const logoutUser = async (req, res) => {
 };
 
 // Get Online Users
-const getOnlineUsers = async (req, res) => {
+export const getOnlineUsers = async (req, res) => {
   try {
     const onlineUsers = await User.find({ status: "Online" });
 
@@ -97,7 +109,7 @@ const getOnlineUsers = async (req, res) => {
 };
 
 // Get User by ID
-const getUserById = async (req, res) => {
+export  const getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
 
@@ -112,4 +124,3 @@ const getUserById = async (req, res) => {
   }
 }
 
-module.exports = { registerUser, loginUser, logoutUser, getOnlineUsers, getUserById };
