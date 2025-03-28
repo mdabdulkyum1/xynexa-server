@@ -7,7 +7,10 @@ import { Server } from 'socket.io';
 import cors from 'cors';
 
 // import routes
-import userRoutes from './routes/userRoutes.js';
+
+const userRoutes = require('./routes/userRoutes');
+const messageRoutes = require('./routes/messageRoutes');
+
 import teamRoutes from './routes/teamRoutes.js'; 
 
 dotenv.config();
@@ -39,7 +42,9 @@ io.on('connection', (socket) => {
 });
 
 app.use("/api", userRoutes);
+app.use("/api", messageRoutes);
 app.use('/api/teams', teamRoutes);
+
 
 app.get('/', (req, res) => {
     res.send('Xynexa Server is running');
