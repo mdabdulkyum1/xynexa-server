@@ -1,7 +1,7 @@
-const Message = require("../models/messageModel");
 
+import Message from "../models/messageModel.js";
 // Fetch Chat History
- const getMessages = async (req, res) => {
+ export const getMessages = async (req, res) => {
   try {
     const { senderId, receiverId } = req.query;
     console.log(senderId, receiverId);
@@ -19,7 +19,7 @@ const Message = require("../models/messageModel");
 };
 
 // Send Message
- const sendMessage = async (req, res) => {
+ export const sendMessage = async (req, res) => {
   try {
     const { senderId, receiverId, text } = req.body;
     const newMessage = new Message({ senderId, receiverId, text });
@@ -32,7 +32,7 @@ const Message = require("../models/messageModel");
 };
 
 // Mark Message as Read
- const markAsRead = async (req, res) => {
+ export const markAsRead = async (req, res) => {
   try {
     const { messageId } = req.body;
     await Message.findByIdAndUpdate(messageId, { read: true });
@@ -44,4 +44,4 @@ const Message = require("../models/messageModel");
 };
 
 
-module.exports = { getMessages, sendMessage, markAsRead };
+

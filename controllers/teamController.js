@@ -1,6 +1,6 @@
 import Team from '../models/teamModel.js';
 import User from '../models/userModel.js'; 
-
+ 
 // Create a team
 export const createTeam = async (req, res) => {
     try {
