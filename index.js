@@ -9,6 +9,7 @@ import cors from 'cors';
 // import routes
 import userRoutes from './routes/userRoutes.js';
 import teamRoutes from './routes/teamRoutes.js'; 
+import messageRoutes from './routes/messageRoutes.js';
 
 dotenv.config();
 

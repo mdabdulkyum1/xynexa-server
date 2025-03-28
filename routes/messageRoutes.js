@@ -1,6 +1,5 @@
-const express = require('express');
-const { getMessages, sendMessage, markAsRead } = require("../controllers/messageController");
-
+import express from 'express';
+import { getMessages, sendMessage, markAsRead } from '../controllers/messageController.js';
 
 const router = express.Router();
 
@@ -8,4 +7,4 @@ router.get("/messages",  getMessages);
 router.post("/send", sendMessage);
 router.put("/read", markAsRead);
 
-module.exports = router;
+export default router;
