@@ -111,7 +111,7 @@ export const getOnlineUsers = async (req, res) => {
 // Get User by ID
 export  const getUserById = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findOne({ clerkId: req.params.id });
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
