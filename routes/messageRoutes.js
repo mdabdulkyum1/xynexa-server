@@ -4,7 +4,7 @@ import { getMessages, sendMessage, markAsRead } from '../controllers/messageCont
 const router = express.Router();
 
 router.get("/messages",  getMessages);
-router.post("/send", sendMessage);
+router.post("/messages/send", sendMessage);
 router.put("/read", markAsRead);
 
 export default router;

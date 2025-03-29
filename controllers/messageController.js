@@ -4,7 +4,7 @@ import Message from "../models/messageModel.js";
  export const getMessages = async (req, res) => {
   try {
     const { senderId, receiverId } = req.query;
-    console.log(senderId, receiverId);
+    
     const messages = await Message.find({
       $or: [
         { senderId, receiverId },
