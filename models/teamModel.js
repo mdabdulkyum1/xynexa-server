@@ -1,4 +1,4 @@
-
+// teamModel.js
 import mongoose from 'mongoose';
 
 const TeamSchema = new mongoose.Schema({
