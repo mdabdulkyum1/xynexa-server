@@ -26,18 +26,36 @@ connectDB();
 app.use(express.json());
 app.use(cors());
 
-io.on('connection', (socket) => {
-    console.log('New client connected:', socket.id);
 
-    socket.on('message', (data) => {
-        console.log('Received:', data);
-        io.emit('message', data);
+io.on("connection", (socket) => {
+    console.log("New client connected:", socket.id);
+  
+    socket.on("join", ({ userId }) => {
+      socket.join(userId);
+    });
+  
+    socket.on("sendMessage", ({ senderId, receiverId, text: message }) => {
+      io.to(receiverId).emit("receiveMessage", { senderId, text: message });
+    });
+  
+    socket.on("typing", ({ senderId, receiverId }) => {
+      io.to(receiverId).emit("typing", { senderId });
+    });
+  
+    socket.on("stopTyping", ({ receiverId }) => {
+      io.to(receiverId).emit("stopTyping");
     });
 
-    socket.on('disconnect', () => {
-        console.log('Client disconnected:', socket.id);
+    socket.on("messageRead", ({ messageId, receiverId }) => {
+        io.to(receiverId).emit("messageRead", { messageId });
+      });
+  
+    socket.on("disconnect", () => {
+      console.log("Client disconnected:", socket.id);
     });
-});
+  });
+
+//ashraful
 
 app.use("/api", userRoutes);
 app.use("/api", messageRoutes);

@@ -111,7 +111,7 @@ export const getOnlineUsers = async (req, res) => {
 // Get User by ID
 export  const getUserById = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findOne({ clerkId: req.params.id });
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -124,3 +124,30 @@ export  const getUserById = async (req, res) => {
   }
 }
 
+// **Get All Users**
+export const getAllUsers = async (req, res) => {
+  try {
+      const users = await User.find(); // Fetch all users
+      return res.status(200).json({ users });
+  } catch (error) {
+      console.error("Error fetching all users:", error);
+      return res.status(500).json({ message: "Server error. Please try again later." });
+  }
+};
+
+// **Get User by Email**
+export const getUserByEmail = async (req, res) => {
+  try {
+      const { email } = req.params;
+      const user = await User.findOne({ email: email });
+
+      if (!user) {
+          return res.status(404).json({ message: "User not found with this email" });
+      }
+
+      return res.status(200).json({ user });
+  } catch (error) {
+      console.error("Error fetching user by email:", error);
+      return res.status(500).json({ message: "Server error. Please try again later." });
+  }
+};
