@@ -2,6 +2,8 @@ import User from '../models/userModel.js'; // Import User model
 
 // Register User (Set Online by Default)
 export const registerUser = async (req, res) => {
+  console.log('regiter clicked')
+  
     try {
         const { clerkId, firstName, lastName, email, imageUrl } = req.body;
 

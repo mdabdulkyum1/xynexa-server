@@ -10,6 +10,7 @@ import cors from 'cors';
 import userRoutes from './routes/userRoutes.js';
 import teamRoutes from './routes/teamRoutes.js'; 
 import messageRoutes from './routes/messageRoutes.js';
+import documentRoutes from './routes/documentRoutes.js';
 
 dotenv.config();
 
@@ -60,6 +61,12 @@ io.on("connection", (socket) => {
 app.use("/api", userRoutes);
 app.use("/api", messageRoutes);
 app.use('/api/teams', teamRoutes);
+app.use('/api/documents', documentRoutes);
+
+app.post('/documents', (req, res) => {
+    const newDoc = req.body;
+  
+})
 
 app.get('/', (req, res) => {
     res.send('Xynexa Server is running');
