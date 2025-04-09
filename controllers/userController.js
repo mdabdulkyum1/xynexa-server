@@ -2,6 +2,8 @@ import User from '../models/userModel.js'; // Import User model
 
 // Register User (Set Online by Default)
 export const registerUser = async (req, res) => {
+  console.log('regiter clicked')
+  
     try {
         const { clerkId, firstName, lastName, email, imageUrl } = req.body;
 
@@ -124,3 +126,30 @@ export  const getUserById = async (req, res) => {
   }
 }
 
+// **Get All Users**
+export const getAllUsers = async (req, res) => {
+  try {
+      const users = await User.find(); // Fetch all users
+      return res.status(200).json({ users });
+  } catch (error) {
+      console.error("Error fetching all users:", error);
+      return res.status(500).json({ message: "Server error. Please try again later." });
+  }
+};
+
+// **Get User by Email**
+export const getUserByEmail = async (req, res) => {
+  try {
+      const { email } = req.params;
+      const user = await User.findOne({ email: email });
+
+      if (!user) {
+          return res.status(404).json({ message: "User not found with this email" });
+      }
+
+      return res.status(200).json({ user });
+  } catch (error) {
+      console.error("Error fetching user by email:", error);
+      return res.status(500).json({ message: "Server error. Please try again later." });
+  }
+};

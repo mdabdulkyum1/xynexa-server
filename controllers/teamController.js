@@ -2,26 +2,44 @@ import Team from '../models/teamModel.js';
 import User from '../models/userModel.js'; 
  
 // Create a team
+
 export const createTeam = async (req, res) => {
     try {
-        const { name, description, type, creator } = req.body; // Creator ID from request body
-
-        const team = new Team({
-            name,
-            description,
-            type,
-            creator,
-            members: [creator], // Creator is added as the first member
+        const team = await Team.create({
+            name: req.body.teamName,
+            description: req.body.teamDescription,
+            type: req.body.teamType,
+            creator: req.body.creator,
         });
-
-        await team.save();
-
-        res.status(201).json({ message: 'Team created successfully', team });
+        res.status(201).json(team);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server Error' });
+        console.error("Error creating team:", error); 
+        res.status(500).json({ message: "Internal server error", error: error.message });
     }
 };
+
+
+export const getUserTeams = async (req, res) => {
+    try {
+        const userId = req.params.userId;
+
+        const teams = await Team.find({
+            $or: [
+                { creator: userId },
+                { members: userId }
+            ]
+        })
+        .populate('creator')
+        .populate('members')
+        .sort({ _id: -1 });;
+
+        res.status(200).json(teams);
+    } catch (error) {
+        console.error("Error fetching user teams:", error);
+        res.status(500).json({ message: "Internal server error", error: error.message });
+    }
+};
+
 
 // Get a team by ID
 export const getTeam = async (req, res) => {
@@ -38,17 +56,17 @@ export const getTeam = async (req, res) => {
 };
 
 
-// Get user's teams (ID from params)
-export const getUserTeams = async (req, res) => {
-    try {
-        const userId = req.params.userId; // User ID from params
-        const teams = await Team.find({ members: userId }).populate('creator').populate('members');
-        res.status(200).json(teams);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server Error' });
-    }
-};
+// // Get user's teams (ID from params)
+// export const getUserTeams = async (req, res) => {
+//     try {
+//         const userId = req.params.userId; // User ID from params
+//         const teams = await Team.find({ members: userId }).populate('creator').populate('members');
+//         res.status(200).json(teams);
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ message: 'Server Error' });
+//     }
+// };
 
 
 // Update a team
