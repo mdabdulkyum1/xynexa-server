@@ -11,6 +11,7 @@ import userRoutes from './routes/userRoutes.js';
 import teamRoutes from './routes/teamRoutes.js'; 
 import messageRoutes from './routes/messageRoutes.js';
 import documentRoutes from './routes/documentRoutes.js';
+import boardRoutes from './routes/boardRoutes.js';
 
 dotenv.config();
 
@@ -60,6 +61,7 @@ io.on("connection", (socket) => {
 
 app.use("/api", userRoutes);
 app.use("/api", messageRoutes);
+app.use("/api/boards", boardRoutes);
 app.use('/api/teams', teamRoutes);
 app.use('/api/documents', documentRoutes);
 

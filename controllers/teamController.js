@@ -126,3 +126,32 @@ export const addMemberToTeam = async (req, res) => {
     }
 };
 
+export const getUserTeamsByEmail = async (req, res) => {
+    try {
+        const userEmail = req.params.userEmail;
+
+        const user = await User.findOne({ email: userEmail });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        const userId = user._id;
+
+        const teams = await Team.find({
+            $or: [
+                { creator: userId },
+                { members: userId }
+            ]
+        })
+        .sort({ _id: -1 });
+
+        const formattedTeams = teams.map(team => ({
+            title: team.name,
+            url: `/dashboard/team/view/${team._id}`
+        }));
+
+        res.status(200).json(formattedTeams);
+    } catch (error) {
+        console.error("Error fetching user teams:", error);
+        res.status(500).json({ message: "Internal server error", error: error.message });
+    }
+};
