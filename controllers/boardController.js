@@ -51,7 +51,6 @@ export const getAllTasksBy = async (req, res) => {
         const tasks = await Board.find(query)
             .populate('teamId')
             .sort({ 'timeStrap.assignDate': -1 });  // Sorting by assignDate
-
         res.status(200).json({
             success: true,
             tasks,

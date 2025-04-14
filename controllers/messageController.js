@@ -36,7 +36,6 @@ import Message from "../models/messageModel.js";
   try {
     const { messageId } = req.body;
     await Message.findByIdAndUpdate(messageId, { read: true });
-
     res.json({ messageId, read: true });
   } catch (error) {
     res.status(500).json({ error: "Server Error" });
