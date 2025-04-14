@@ -146,7 +146,9 @@ export const getUserTeamsByEmail = async (req, res) => {
 
         const formattedTeams = teams.map(team => ({
             title: team.name,
-            url: `/dashboard/team/view/${team._id}`
+
+            url:`/dashboard/tasks/${team._id}`
+
         }));
 
         res.status(200).json(formattedTeams);
