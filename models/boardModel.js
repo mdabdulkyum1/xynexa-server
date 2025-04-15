@@ -5,35 +5,46 @@ const BoardSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    status: {
-        type: String, enum: ['pending', 'in-progress', 'completed', 'backlog'], default: 'pending',
+    description: {
+        type: String,
     },
-    timeStrap: {
-        assignDate: {
-            type: Date,
-            required: true,
-        },
-        finishDate: {
-            type: Date,
-            required: true,
-        },
-    },
-    membersEmail: [
-        {
-            type: String,
-            required: true,
-        }
-    ],
     teamId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Team',
         required: true,
     },
-    teamCreatorEmail: {
-        type: String, required: true,
+    members: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    }],
+    status: {
+        type: String,
+        enum: ['todo', 'in-progress', 'done', 'blocked'],
+        default: 'todo',
+    },
+    comments: [{
+        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        text: String,
+        createdAt: { type: Date, default: Date.now }
+    }],
+    attachments: [{
+        url: String,
+        filename: String,
+        createdAt: { type: Date, default: Date.now }
+    }],
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
+    updatedAt: {
+        type: Date,
+        default: Date.now,
+    },
+    targetDate: { 
+        type: Date,
     },
 });
 
-const Board = mongoose.model('Board', BoardSchema)
-export default Board;
+const Board = mongoose.model('Board', BoardSchema);
 
+export default Board;
