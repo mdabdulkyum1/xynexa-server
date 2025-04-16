@@ -12,7 +12,7 @@ import teamRoutes from './routes/teamRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
 import documentRoutes from './routes/documentRoutes.js';
 import boardRoutes from './routes/boardRoutes.js';
-
+import paymentRoutes from './routes/paymentRoutes.js'
 dotenv.config();
 
 const app = express();
@@ -34,7 +34,7 @@ io.on("connection", (socket) => {
   
     socket.on("join", ({ userId }) => {
       socket.join(userId);
-    });
+    }); 
   
     socket.on("sendMessage", ({ senderId, receiverId, text: message }) => {
       io.to(receiverId).emit("receiveMessage", { senderId, text: message });
@@ -48,9 +48,28 @@ io.on("connection", (socket) => {
       io.to(receiverId).emit("stopTyping");
     });
 
-    socket.on("messageRead", ({ messageId, receiverId }) => {
-        io.to(receiverId).emit("messageRead", { messageId });
-      });
+    socket.on("messageRead", async ({ _id: messageId, receiverId }) => {
+      try {
+          console.log("Message read:", messageId, "<<<<test>>>>", receiverId);
+  
+          const updatedMessage = await Message.findByIdAndUpdate(
+              messageId, // Directly using messageId (since it's already ObjectId)
+              { read: true },
+              { new: true }
+          );
+  
+          if (!updatedMessage) {
+              console.log("Message not found!");
+              return;
+          }
+  
+          io.to(receiverId).emit("messageRead", { id: messageId });
+  
+      } catch (error) {
+          console.error("Error updating message read status:", error);
+      }
+  });
+  
   
     socket.on("disconnect", () => {
       console.log("Client disconnected:", socket.id);
@@ -64,6 +83,7 @@ app.use("/api", messageRoutes);
 app.use("/api/boards", boardRoutes);
 app.use('/api/teams', teamRoutes);
 app.use('/api/documents', documentRoutes);
+app.use('/api/payments', paymentRoutes);      //payment route
 
 app.post('/documents', (req, res) => {
     const newDoc = req.body;
