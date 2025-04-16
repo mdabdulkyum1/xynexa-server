@@ -99,7 +99,7 @@ export const logoutUser = async (req, res) => {
 // Get Online Users
 export const getOnlineUsers = async (req, res) => {
   try {
-    const onlineUsers = await User.find({ status: "Online" });
+    const onlineUsers = await User.find();
 
     return res.status(200).json({ onlineUsers });
   } catch (error) {
