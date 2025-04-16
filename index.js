@@ -83,7 +83,7 @@ app.use("/api", messageRoutes);
 app.use("/api/boards", boardRoutes);
 app.use('/api/teams', teamRoutes);
 app.use('/api/documents', documentRoutes);
-app.use('/api/payments', paymentRoutes);
+app.use('/api/payments', paymentRoutes);      //payment route
 
 app.post('/documents', (req, res) => {
     const newDoc = req.body;
