@@ -8,6 +8,6 @@ router.get('/online/users', getOnlineUsers);
 router.get('/users/:id', getUserById);
 router.get('/users', getAllUsers); // Route to get all users
 router.get('/users/email/:email', getUserByEmail); // Route to get user by ema
-router.patch('/logout', logoutUser);
+router.patch('/offlineUser', logoutUser);
 
 export default router; 

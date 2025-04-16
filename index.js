@@ -12,10 +12,7 @@ import teamRoutes from './routes/teamRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
 import documentRoutes from './routes/documentRoutes.js';
 import boardRoutes from './routes/boardRoutes.js';
-
-// import models
-import Message from './models/messageModel.js';
-
+import paymentRoutes from './routes/paymentRoutes.js'
 dotenv.config();
 
 const app = express();
@@ -86,6 +83,7 @@ app.use("/api", messageRoutes);
 app.use("/api/boards", boardRoutes);
 app.use('/api/teams', teamRoutes);
 app.use('/api/documents', documentRoutes);
+app.use('/api/payments', paymentRoutes);
 
 app.post('/documents', (req, res) => {
     const newDoc = req.body;
