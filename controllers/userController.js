@@ -56,7 +56,6 @@ export const registerUser = async (req, res) => {
 export const loginUser = async (req, res) => {
   try {
     const { clerkId } = req.body;
-
     // Find user and update status to Online
     const user = await User.findOneAndUpdate(
       { clerkId },
@@ -79,7 +78,7 @@ export const loginUser = async (req, res) => {
 export const logoutUser = async (req, res) => {
   try {
     const { clerkId } = req.body;
-    
+
     const user = await User.findOneAndUpdate(
       { clerkId },
       { status: "Offline", lastActive: new Date() },
