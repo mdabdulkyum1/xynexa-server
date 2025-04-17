@@ -32,7 +32,7 @@ router.post('/members', addMemberToBoard);
 router.post('/comments', addCommentToBoard);
 
 // Update the status of a board
-router.put('/status', updateBoardStatus);
+router.put('/:boardId/status', updateBoardStatus);
 
 // Add an attachment to a board
 router.post('/attachments', addAttachmentToBoard);
