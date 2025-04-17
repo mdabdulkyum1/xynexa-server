@@ -34,6 +34,8 @@ export const updateBoard = async (req, res) => {
 };
 
 export const deleteBoard = async (req, res) => {
+  console.log('Deleting board with ID:', req.params.id);
+  
   try {
     const board = await Board.findByIdAndDelete(req.params.id);
     if (!board) return res.status(404).json({ message: 'Board not found' });
@@ -123,9 +125,14 @@ export const updateBoardStatus = async (req, res) => {
 };
 
 export const getBoardsByTeamId = async (req, res) => {
+  console.log('Fetching boards for team ID:', req.params.teamId);
   try {
     const { teamId } = req.params;
     const boards = await Board.find({ teamId: teamId }).populate('members comments.user');
+
+    // if (!boards || boards.length === 0) {
+    //   return res.status(404).json({ message: 'No boards found for this team' });
+    // }
 
     res.status(200).json(boards);
   } catch (error) {

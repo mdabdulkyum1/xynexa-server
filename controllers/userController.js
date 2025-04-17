@@ -56,7 +56,6 @@ export const registerUser = async (req, res) => {
 export const loginUser = async (req, res) => {
   try {
     const { clerkId } = req.body;
-
     // Find user and update status to Online
     const user = await User.findOneAndUpdate(
       { clerkId },
@@ -80,7 +79,6 @@ export const logoutUser = async (req, res) => {
   try {
     const { clerkId } = req.body;
 
-    // Find user and update status to Offline
     const user = await User.findOneAndUpdate(
       { clerkId },
       { status: "Offline", lastActive: new Date() },
@@ -101,7 +99,7 @@ export const logoutUser = async (req, res) => {
 // Get Online Users
 export const getOnlineUsers = async (req, res) => {
   try {
-    const onlineUsers = await User.find({ status: "Online" });
+    const onlineUsers = await User.find();
 
     return res.status(200).json({ onlineUsers });
   } catch (error) {
