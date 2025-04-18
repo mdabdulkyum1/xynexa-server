@@ -1,4 +1,5 @@
 import { Server } from 'socket.io';
+import Board from '../models/boardModel.js'; // Import the Board model
 
 export function setupSocket(server) {
   const io = new Server(server, {
@@ -11,9 +12,12 @@ export function setupSocket(server) {
   const connectedUsers = {};
 
   io.on('connection', (socket) => {
+    console.log('🔌 New client connected');
+
     socket.on('join', ({ userId }) => {
       socket.join(userId);
       connectedUsers[userId] = socket.id;
+      console.log(`👤 User ${userId} joined`);
     });
 
     socket.on('sendMessage', (message) => {
@@ -34,14 +38,41 @@ export function setupSocket(server) {
     });
 
     socket.on("deleteMessage", ({ messageId, receiverId }) => {
-      // Send delete info directly to receiver
       socket.to(receiverId).emit("messageDeleted", { messageId });
+    });
+
+    // 📌 New: Update Board Task Status in Real-Time
+    socket.on('update-task-status', async ({ boardId, newStatus }) => {
+      try {
+        const updatedBoard = await Board.findByIdAndUpdate(
+          boardId,
+          { status: newStatus, updatedAt: new Date() },
+          { new: true }
+        ).populate('members comments.user attachments.user');
+
+        if (!updatedBoard) {
+          console.error(`❌ Board not found: ${boardId}`);
+          return;
+        }
+
+        // Notify all members about the update
+        updatedBoard.members.forEach(member => {
+          const socketId = connectedUsers[member._id.toString()];
+          if (socketId) {
+            io.to(socketId).emit('boardStatusUpdated', updatedBoard);
+          }
+        });
+
+      } catch (err) {
+        console.error('❌ Error updating board status:', err);
+      }
     });
 
     socket.on('disconnect', () => {
       for (const [userId, sId] of Object.entries(connectedUsers)) {
         if (sId === socket.id) {
           delete connectedUsers[userId];
+          console.log(`🚪 User ${userId} disconnected`);
           break;
         }
       }
