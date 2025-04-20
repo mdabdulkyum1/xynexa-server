@@ -1,5 +1,6 @@
 import { Server } from "socket.io";
 import Board from "../models/boardModel.js"; // Import the Board model
+import Message from '../models/messageModel.js'; // Import the Message model
 
 export function setupSocket(server) {
   const io = new Server(server, {
@@ -43,11 +44,28 @@ export function setupSocket(server) {
       }
     });
 
-    socket.on("messageRead", ({ _id, receiverId }) => {
-      if (_id && receiverId) {
-        io.to(receiverId).emit("messageRead", { id: _id });
+  
+
+    socket.on("messageRead", async ({ _id: messageId, receiverId }) => {
+      try {
+          const updatedMessage = await Message.findByIdAndUpdate(
+              messageId, 
+              { read: true },
+              { new: true }
+          );
+  
+          if (!updatedMessage) {
+              console.log("Message not found!");
+              return;
+          }
+  
+          io.to(receiverId).emit("messageRead", { id: messageId });
+  
+      } catch (error) {
+          console.error("Error updating message read status:", error);
       }
-    });
+  });
+
 
     socket.on("deleteMessage", ({ messageId, receiverId }) => {
       if (messageId && receiverId) {
