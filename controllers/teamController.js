@@ -5,11 +5,13 @@ import User from '../models/userModel.js';
 
 export const createTeam = async (req, res) => {
     try {
+        const creatorId = req.body.creator;
         const team = await Team.create({
             name: req.body.teamName,
             description: req.body.teamDescription,
             type: req.body.teamType,
-            creator: req.body.creator,
+            creator: creatorId,
+            members: [creatorId], 
         });
         res.status(201).json(team);
     } catch (error) {
