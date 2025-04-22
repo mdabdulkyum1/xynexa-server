@@ -10,8 +10,8 @@ export const createTeam = async (req, res) => {
             name: req.body.teamName,
             description: req.body.teamDescription,
             type: req.body.teamType,
-            creator: req.body.creator,
-            members: req.body.creator,
+            creator: creatorId,
+            members: [creatorId], 
         });
         res.status(201).json(team);
     } catch (error) {
