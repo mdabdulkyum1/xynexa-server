@@ -10,6 +10,7 @@ export const createTeam = async (req, res) => {
             description: req.body.teamDescription,
             type: req.body.teamType,
             creator: req.body.creator,
+            members: req.body.creator,
         });
         res.status(201).json(team);
     } catch (error) {
