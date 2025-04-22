@@ -5,6 +5,7 @@ import User from '../models/userModel.js';
 
 export const createTeam = async (req, res) => {
     try {
+        const creatorId = req.body.creator;
         const team = await Team.create({
             name: req.body.teamName,
             description: req.body.teamDescription,

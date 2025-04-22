@@ -150,3 +150,31 @@ export const getUserByEmail = async (req, res) => {
       return res.status(500).json({ message: "Server error. Please try again later." });
   }
 };
+
+// get user by email for free payment
+export const updateUserPackageByEmail = async (req, res) => {
+  try {
+    const { _id, packageName } = req.body;
+   console.log(_id, packageName)
+    
+
+    const updatedUser = await User.findOneAndUpdate(
+      { _id },
+      { package: packageName },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `Package updated to ${packageName}`,
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("Error updating package:", error);
+    return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
