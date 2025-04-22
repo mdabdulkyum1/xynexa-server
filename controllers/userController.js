@@ -1,3 +1,4 @@
+import Team from '../models/teamModel.js';
 import User from '../models/userModel.js'; // Import User model
 
 // Register User (Set Online by Default)
@@ -98,14 +99,56 @@ export const logoutUser = async (req, res) => {
 // Get Online Users
 export const getOnlineUsers = async (req, res) => {
   try {
-    const onlineUsers = await User.find();
+    const { userEmail: email } = req.params;
 
-    return res.status(200).json({ onlineUsers });
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is required in params',
+      });
+    }
+
+    // Get current user's _id
+    const currentUser = await User.findOne({ email });
+    if (!currentUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    // Find teams where this user is a member
+    const teams = await Team.find({ members: currentUser._id })
+      .populate('members', 'clerkId email firstName lastName imageUrl status lastActive');
+
+    // Extract all members from these teams
+    const allMembers = teams.flatMap(team => team.members);
+
+    // Remove duplicates using user _id
+    const uniqueMembersMap = new Map();
+    allMembers.forEach(member => {
+      uniqueMembersMap.set(member._id.toString(), member);
+    });
+
+    const uniqueMembers = Array.from(uniqueMembersMap.values());
+
+    // return res.status(200).json({
+    //   success: true,
+    //   members: uniqueMembers,
+    // });
+
+    return res.status(200).json({ uniqueMembers });
+
   } catch (error) {
-    console.error("Error fetching online users:", error);
-    return res.status(500).json({ message: "Server error. Please try again later." });
+    console.error("Error fetching team members:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error. Please try again later.",
+    });
   }
 };
+
+
 
 // Get User by ID
 export  const getUserById = async (req, res) => {
