@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema(
     role: { type: String, required: true, default: "member" }, // Default role
     status: { type: String, enum: ["Online", "Offline"], default: "Offline" }, // Track user status
     lastActive: { type: Date, default: Date.now }, // Last activity timestamp
+    package: { type: String,enum: ["free", "diamond", "platinum"], default: "new" }, // User package (free, pro, etc.)
   },
   { timestamps: true, versionKey: false }
 );

@@ -56,7 +56,6 @@ export const registerUser = async (req, res) => {
 export const loginUser = async (req, res) => {
   try {
     const { clerkId } = req.body;
-
     // Find user and update status to Online
     const user = await User.findOneAndUpdate(
       { clerkId },
@@ -80,7 +79,6 @@ export const logoutUser = async (req, res) => {
   try {
     const { clerkId } = req.body;
 
-    // Find user and update status to Offline
     const user = await User.findOneAndUpdate(
       { clerkId },
       { status: "Offline", lastActive: new Date() },
@@ -101,7 +99,7 @@ export const logoutUser = async (req, res) => {
 // Get Online Users
 export const getOnlineUsers = async (req, res) => {
   try {
-    const onlineUsers = await User.find({ status: "Online" });
+    const onlineUsers = await User.find();
 
     return res.status(200).json({ onlineUsers });
   } catch (error) {
@@ -151,5 +149,33 @@ export const getUserByEmail = async (req, res) => {
   } catch (error) {
       console.error("Error fetching user by email:", error);
       return res.status(500).json({ message: "Server error. Please try again later." });
+  }
+};
+
+// get user by email for free payment
+export const updateUserPackageByEmail = async (req, res) => {
+  try {
+    const { _id, packageName } = req.body;
+   console.log(_id, packageName)
+    
+
+    const updatedUser = await User.findOneAndUpdate(
+      { _id },
+      { package: packageName },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `Package updated to ${packageName}`,
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("Error updating package:", error);
+    return res.status(500).json({ success: false, message: "Internal server error" });
   }
 };

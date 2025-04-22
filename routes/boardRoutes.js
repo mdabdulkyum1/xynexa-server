@@ -9,6 +9,7 @@ import {
     updateBoardStatus,
     addAttachmentToBoard,
     getBoardsByTeamId,
+    getBoardsByUserEmail,
 } from '../controllers/boardController.js';
 
 const router = express.Router();
@@ -32,12 +33,13 @@ router.post('/members', addMemberToBoard);
 router.post('/comments', addCommentToBoard);
 
 // Update the status of a board
-router.put('/status', updateBoardStatus);
+router.put('/:boardId/status', updateBoardStatus);
 
 // Add an attachment to a board
 router.post('/attachments', addAttachmentToBoard);
 
 // Get boards by team ID
 router.get('/team/:teamId', getBoardsByTeamId);
+router.get('/task/email/:email', getBoardsByUserEmail);
 
 export default router;

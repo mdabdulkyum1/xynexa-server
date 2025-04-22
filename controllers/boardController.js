@@ -1,7 +1,6 @@
 import Board from '../models/boardModel.js';
 import User from '../models/userModel.js';
 
-// Create a new board
 export const createBoard = async (req, res) => {
   try {
     const board = await Board.create(req.body);
@@ -12,7 +11,6 @@ export const createBoard = async (req, res) => {
   }
 };
 
-// Get a board by ID
 export const getBoardById = async (req, res) => {
   try {
     const board = await Board.findById(req.params.id).populate('members comments.user');
@@ -24,7 +22,6 @@ export const getBoardById = async (req, res) => {
   }
 };
 
-// Update a board
 export const updateBoard = async (req, res) => {
   try {
     const board = await Board.findByIdAndUpdate(req.params.id, req.body, { new: true }).populate('members comments.user');
@@ -36,8 +33,9 @@ export const updateBoard = async (req, res) => {
   }
 };
 
-// Delete a board
 export const deleteBoard = async (req, res) => {
+  console.log('Deleting board with ID:', req.params.id);
+  
   try {
     const board = await Board.findByIdAndDelete(req.params.id);
     if (!board) return res.status(404).json({ message: 'Board not found' });
@@ -48,7 +46,6 @@ export const deleteBoard = async (req, res) => {
   }
 };
 
-// Add a member to a board
 export const addMemberToBoard = async (req, res) => {
   try {
     const { boardId, userId } = req.body;
@@ -68,10 +65,11 @@ export const addMemberToBoard = async (req, res) => {
   }
 };
 
-// Add a comment to a board
 export const addCommentToBoard = async (req, res) => {
   try {
     const { boardId, userId, text } = req.body;
+    console.log(boardId,userId,text);
+    
     const board = await Board.findById(boardId);
     if (!board) return res.status(404).json({ message: 'Board not found' });
 
@@ -85,10 +83,38 @@ export const addCommentToBoard = async (req, res) => {
   }
 };
 
-// Update the status of a board
+export const addAttachmentToBoard = async (req, res) => {
+  try {
+    const { boardId, userId, url, filename } = req.body;
+    console.log(boardId, userId, url, filename);
+
+    const board = await Board.findById(boardId);
+    if (!board) {
+      return res.status(404).json({ message: 'Board not found' });
+    }
+
+    board.attachments.push({ user: userId, url, filename }); 
+    await board.save();
+
+    const updatedBoard = await Board.findById(boardId)
+      .populate('members')
+      .populate('comments.user')
+      .populate('attachments.user');
+
+    res.status(200).json(updatedBoard);
+
+  } catch (error) {
+    console.error('Error adding attachment to board:', error);
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+};
+
 export const updateBoardStatus = async (req, res) => {
   try {
-    const { boardId, status } = req.body;
+    const { status } = req.body;
+    const { boardId } = req.params;
+    console.log(status,boardId);
+    
     const board = await Board.findByIdAndUpdate(boardId, { status }, { new: true }).populate('members comments.user');
     if (!board) return res.status(404).json({ message: 'Board not found' });
     res.status(200).json(board);
@@ -98,36 +124,43 @@ export const updateBoardStatus = async (req, res) => {
   }
 };
 
-// Add an attachment to a board
-export const addAttachmentToBoard = async (req, res) => {
-  try {
-    const { boardId, url, filename } = req.body;
-    const board = await Board.findById(boardId);
-    if (!board) return res.status(404).json({ message: 'Board not found' });
-
-    board.attachments.push({ url, filename });
-    await board.save();
-    res.status(200).json(await Board.findById(boardId).populate('members comments.user'));
-
-  } catch (error) {
-    console.error('Error adding attachment to board:', error);
-    res.status(500).json({ message: 'Server Error', error: error.message });
-  }
-};
-
-// Get boards by team ID
 export const getBoardsByTeamId = async (req, res) => {
+  console.log('Fetching boards for team ID:', req.params.teamId);
   try {
     const { teamId } = req.params;
-    const boards = await Board.find({ teamId: teamId }).populate('members comments.user');
+    const boards = await Board.find({ teamId: teamId }).populate('members comments.user').sort({ _id: -1 });
 
-    if (!boards || boards.length === 0) {
-      return res.status(404).json({ message: 'No boards found for this team' });
-    }
+    // if (!boards || boards.length === 0) {
+    //   return res.status(404).json({ message: 'No boards found for this team' });
+    // }
 
     res.status(200).json(boards);
   } catch (error) {
     console.error('Error fetching boards by teamId:', error);
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+};
+
+
+export const getBoardsByUserEmail = async (req, res) => {
+  const { email } = req.params;
+  console.log(`Fetching boards for user with email: ${email}`);
+
+  try {
+   
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+   
+    const boards = await Board.find({ members: user._id }).populate('members comments.user');
+
+    res.status(200).json(boards);
+
+  } catch (error) {
+    console.error('Error fetching boards by user email:', error);
     res.status(500).json({ message: 'Server Error', error: error.message });
   }
 };

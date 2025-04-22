@@ -43,4 +43,21 @@ import Message from "../models/messageModel.js";
 };
 
 
+// Delete Message
+export const deleteMessage = async (req, res) => {
+  try {
+    const messageId = req.params.id; 
+    const deletedMessage = await Message.findByIdAndDelete(messageId);
+
+    if (!deletedMessage) {
+      return res.status(404).send({ error: "Message not found" });
+    }
+
+    res.send({ success: true, id: messageId });
+  } catch (err) {
+    res.status(500).send({ error: err.message });
+  }
+};
+
+
 

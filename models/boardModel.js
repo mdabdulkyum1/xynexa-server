@@ -28,6 +28,7 @@ const BoardSchema = new mongoose.Schema({
         createdAt: { type: Date, default: Date.now }
     }],
     attachments: [{
+        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
         url: String,
         filename: String,
         createdAt: { type: Date, default: Date.now }
@@ -46,5 +47,5 @@ const BoardSchema = new mongoose.Schema({
 });
 
 const Board = mongoose.model('Board', BoardSchema);
-
+// hay
 export default Board;
