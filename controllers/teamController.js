@@ -178,8 +178,6 @@ export const getTeamsByEmailForGroupChat = async (req, res) => {
             ]
         })
         .sort({ _id: -1 });
-
-        console.log("get teams by email", teams);
         
 
         res.status(200).json(teams);
