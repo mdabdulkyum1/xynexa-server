@@ -12,6 +12,8 @@ export function setupSocket(server) {
 
   const connectedUsers = {};
 
+  const connectedGroups = {};
+
   io.on("connection", (socket) => {
     console.log("🔌 New client connected");
 
@@ -44,27 +46,27 @@ export function setupSocket(server) {
       }
     });
 
-  
+
 
     socket.on("messageRead", async ({ _id: messageId, receiverId }) => {
       try {
-          const updatedMessage = await Message.findByIdAndUpdate(
-              messageId, 
-              { read: true },
-              { new: true }
-          );
-  
-          if (!updatedMessage) {
-              console.log("Message not found!");
-              return;
-          }
-  
-          io.to(receiverId).emit("messageRead", { id: messageId });
-  
+        const updatedMessage = await Message.findByIdAndUpdate(
+          messageId,
+          { read: true },
+          { new: true }
+        );
+
+        if (!updatedMessage) {
+          console.log("Message not found!");
+          return;
+        }
+
+        io.to(receiverId).emit("messageRead", { id: messageId });
+
       } catch (error) {
-          console.error("Error updating message read status:", error);
+        console.error("Error updating message read status:", error);
       }
-  });
+    });
 
 
     socket.on("deleteMessage", ({ messageId, receiverId }) => {
@@ -72,6 +74,33 @@ export function setupSocket(server) {
         io.to(receiverId).emit("messageDeleted", { messageId });
       }
     });
+
+    // GROUP CHAT SOCKETS
+    socket.on("joinGroup", ({ groupId }) => {
+      if (!groupId) return;
+      socket.join(groupId);
+      connectedGroups[groupId] = socket.id;
+      console.log(`👤 User ${groupId} joined _______________`);
+    });
+
+    socket.on("sentGroupMessage", (groupMsg) => {
+      console.log("Group message sent)))))))))))))))))):", groupMsg);
+      const { senderId, groupId, } = groupMsg;
+      if (!groupId || !senderId) {
+        console.error("Invalid message data: missing receiverId or senderId");
+        return;
+      }
+      // Emit message only to the intended receiver
+
+
+
+
+      
+      io.to(groupId).emit("receiveGroupMessage", groupMsg);
+    });
+
+
+
 
     // Update Board Task Status in Real-Time
     socket.on("update-task-status", async ({ boardId, newStatus }) => {
