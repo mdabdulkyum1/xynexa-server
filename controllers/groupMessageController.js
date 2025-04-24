@@ -36,7 +36,7 @@ export const getGroupMessages = async (req, res) => {
             return res.status(400).json({ error: 'Group ID is required' });
         }
 
-        const messages = await GroupMessage.find({ groupId }).populate('senderId', 'firstName email ').sort('-timestamp');
+        const messages = await GroupMessage.find({ groupId }).populate('senderId', 'firstName LastName email ');
 
         res.status(200).json(messages);
     } catch (error) {
