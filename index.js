@@ -15,6 +15,7 @@ import messageRoutes from './routes/messageRoutes.js';
 import documentRoutes from './routes/documentRoutes.js';
 import boardRoutes from './routes/boardRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
+import groupMessageRoutes from './routes/groupMessageRoutes.js';
 
 dotenv.config();
 connectDB();
@@ -37,6 +38,7 @@ app.use("/api/boards", boardRoutes);
 app.use('/api/teams', teamRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api', groupMessageRoutes);
 
 // Root route
 app.get('/', (req, res) => {

@@ -1,6 +1,7 @@
 import { Server } from "socket.io";
 import Board from "../models/boardModel.js"; // Import the Board model
 import Message from '../models/messageModel.js'; // Import the Message model
+import User from '../models/userModel.js'; // Import the Message model
 
 export function setupSocket(server) {
   const io = new Server(server, {
@@ -11,6 +12,8 @@ export function setupSocket(server) {
   });
 
   const connectedUsers = {};
+
+  const connectedGroups = {};
 
   io.on("connection", (socket) => {
     console.log("🔌 New client connected");
@@ -44,27 +47,27 @@ export function setupSocket(server) {
       }
     });
 
-  
+
 
     socket.on("messageRead", async ({ _id: messageId, receiverId }) => {
       try {
-          const updatedMessage = await Message.findByIdAndUpdate(
-              messageId, 
-              { read: true },
-              { new: true }
-          );
-  
-          if (!updatedMessage) {
-              console.log("Message not found!");
-              return;
-          }
-  
-          io.to(receiverId).emit("messageRead", { id: messageId });
-  
+        const updatedMessage = await Message.findByIdAndUpdate(
+          messageId,
+          { read: true },
+          { new: true }
+        );
+
+        if (!updatedMessage) {
+          console.log("Message not found!");
+          return;
+        }
+
+        io.to(receiverId).emit("messageRead", { id: messageId });
+
       } catch (error) {
-          console.error("Error updating message read status:", error);
+        console.error("Error updating message read status:", error);
       }
-  });
+    });
 
 
     socket.on("deleteMessage", ({ messageId, receiverId }) => {
@@ -72,6 +75,55 @@ export function setupSocket(server) {
         io.to(receiverId).emit("messageDeleted", { messageId });
       }
     });
+
+    // GROUP CHAT SOCKETS
+    socket.on("joinGroup", ({ groupId }) => {
+      if (!groupId) return;
+      socket.join(groupId);
+      connectedGroups[groupId] = socket.id;
+      console.log(`👤 User ${groupId} joined _______________`);
+    });
+
+    socket.on("sentGroupMessage", async (groupMsg) => {
+      console.log("Group message sent)))))))))))))))))):", groupMsg);
+      const { senderId, groupId, newMessage, messageId } = groupMsg;
+      if (!groupId || !senderId || !newMessage) {
+        console.error("Invalid message data: missing receiverId or senderId");
+        return;
+      }
+
+      try {
+        const sender = await User.findById(senderId).select('firstName email');
+        if (!sender) {
+          console.error("Sender not found:", senderId);
+          return;
+        }
+
+        // Now create final message format
+        const populatedMsg = {
+          _id: messageId,
+          senderId: {
+            _id: sender._id,
+            firstName: sender.firstName,
+            email: sender.email
+          },
+          groupId,
+          message: newMessage,
+          timestamp: new Date().toISOString(),
+        };
+
+        console.log("Populated message:", populatedMsg);
+        // Emit message only to the intended receiver
+        io.to(groupId).emit("receiveGroupMessage", populatedMsg);
+
+      }
+      catch (err) {
+        console.error("Error saving group message:", err);
+      }
+    });
+
+
+
 
     // Update Board Task Status in Real-Time
     socket.on("update-task-status", async ({ boardId, newStatus }) => {
