@@ -1,6 +1,7 @@
 import { Server } from "socket.io";
 import Board from "../models/boardModel.js"; // Import the Board model
 import Message from '../models/messageModel.js'; // Import the Message model
+import User from '../models/userModel.js'; // Import the Message model
 
 export function setupSocket(server) {
   const io = new Server(server, {
@@ -83,20 +84,42 @@ export function setupSocket(server) {
       console.log(`👤 User ${groupId} joined _______________`);
     });
 
-    socket.on("sentGroupMessage", (groupMsg) => {
+    socket.on("sentGroupMessage", async (groupMsg) => {
       console.log("Group message sent)))))))))))))))))):", groupMsg);
-      const { senderId, groupId, } = groupMsg;
-      if (!groupId || !senderId) {
+      const { senderId, groupId, newMessage, messageId } = groupMsg;
+      if (!groupId || !senderId || !newMessage) {
         console.error("Invalid message data: missing receiverId or senderId");
         return;
       }
-      // Emit message only to the intended receiver
 
+      try {
+        const sender = await User.findById(senderId).select('firstName email');
+        if (!sender) {
+          console.error("Sender not found:", senderId);
+          return;
+        }
 
+        // Now create final message format
+        const populatedMsg = {
+          _id: messageId,
+          senderId: {
+            _id: sender._id,
+            firstName: sender.firstName,
+            email: sender.email
+          },
+          groupId,
+          message: newMessage,
+          timestamp: new Date().toISOString(),
+        };
 
+        console.log("Populated message:", populatedMsg);
+        // Emit message only to the intended receiver
+        io.to(groupId).emit("receiveGroupMessage", populatedMsg);
 
-      
-      io.to(groupId).emit("receiveGroupMessage", groupMsg);
+      }
+      catch (err) {
+        console.error("Error saving group message:", err);
+      }
     });
 
 
