@@ -85,7 +85,6 @@ export function setupSocket(server) {
     });
 
     socket.on("sentGroupMessage", async (groupMsg) => {
-      console.log("Group message sent)))))))))))))))))):", groupMsg);
       const { senderId, groupId, newMessage, messageId } = groupMsg;
       if (!groupId || !senderId || !newMessage) {
         console.error("Invalid message data: missing receiverId or senderId");
@@ -111,8 +110,6 @@ export function setupSocket(server) {
           message: newMessage,
           timestamp: new Date().toISOString(),
         };
-
-        console.log("Populated message:", populatedMsg);
         // Emit message only to the intended receiver
         io.to(groupId).emit("receiveGroupMessage", populatedMsg);
 
