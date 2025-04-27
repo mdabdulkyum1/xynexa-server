@@ -10,7 +10,8 @@ export const meetSocketSetUp = (server) => {
       });
 
 
-
+const roomCodeToIdMap = {};
+const roomUsers = {};
 
 
 io.on("connection", (socket) => {
@@ -18,6 +19,7 @@ io.on("connection", (socket) => {
 
     // Create Room
     socket.on("createRoom", async (userData) => {
+        // console.log("User Data:", userData);
         try {
             // 100ms room create 
             const roomResponse = await axios.post(
@@ -33,6 +35,8 @@ io.on("connection", (socket) => {
                     },
                 }
             );
+
+
             const roomId = roomResponse.data.id; // 100ms room id 
 
             // Generate room code
@@ -46,9 +50,10 @@ io.on("connection", (socket) => {
                     },
                 }
             );
-
+            
             const roomCode = roomCodeResponse.data.data.find(code => code.enabled)?.code;
-            console.log("Room Code:", roomCode);
+            console.log("Room Code =>>>>>>>>>>>>>>>>>>>>>>>(((::::", roomCode);
+
             
             // Store mapping of roomCode to roomId
             roomCodeToIdMap[roomCode] = roomId;
@@ -57,7 +62,7 @@ io.on("connection", (socket) => {
             roomUsers[roomCode] = [{ socketId: socket.id, ...userData }];
             const { name, timestamp } = userData;
             socket.emit("RoomCreated", roomCode, name, timestamp);
-            console.log("Room Created: ", roomCode);
+            // console.log("Room Created: ", roomCode);
 
         } catch (error) {
             console.error("Error creating 100ms room:", error);
