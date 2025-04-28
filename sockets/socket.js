@@ -1,47 +1,161 @@
-import { Server } from 'socket.io';
+import { Server } from "socket.io";
+import Board from "../models/boardModel.js"; // Import the Board model
+import Message from '../models/messageModel.js'; // Import the Message model
+import User from '../models/userModel.js'; // Import the Message model
 
 export function setupSocket(server) {
   const io = new Server(server, {
     cors: {
-      origin: process.env.CLIENT_URL || 'http://localhost:3000',
-      methods: ['GET', 'POST']
-    }
+      origin: process.env.CLIENT_URL || "http://localhost:3000",
+      methods: ["GET", "POST"],
+    },
   });
 
   const connectedUsers = {};
 
-  io.on('connection', (socket) => {
-    socket.on('join', ({ userId }) => {
+  const connectedGroups = {};
+
+  io.on("connection", (socket) => {
+    console.log("🔌 New client connected");
+
+    socket.on("join", ({ userId }) => {
+      if (!userId) return;
       socket.join(userId);
       connectedUsers[userId] = socket.id;
+      console.log(`👤 User ${userId} joined`);
     });
 
-    socket.on('sendMessage', (message) => {
-      const { receiverId } = message;
-      io.to(receiverId).emit('receiveMessage', message);
+    socket.on("sendMessage", (message) => {
+      const { receiverId, senderId } = message;
+      if (!receiverId || !senderId) {
+        console.error("Invalid message data: missing receiverId or senderId");
+        return;
+      }
+      // Emit message only to the intended receiver
+      io.to(receiverId).emit("receiveMessage", message);
     });
 
-    socket.on('typing', ({ senderId, receiverId }) => {
-      io.to(receiverId).emit('typing', { senderId });
+    socket.on("typing", ({ senderId, receiverId }) => {
+      if (receiverId && senderId) {
+        io.to(receiverId).emit("typing", { senderId });
+      }
     });
 
-    socket.on('stopTyping', ({ receiverId }) => {
-      io.to(receiverId).emit('stopTyping');
+    socket.on("stopTyping", ({ receiverId }) => {
+      if (receiverId) {
+        io.to(receiverId).emit("stopTyping");
+      }
     });
 
-    socket.on('messageRead', ({ _id, receiverId }) => {
-      io.to(receiverId).emit('messageRead', { id: _id });
+
+
+    socket.on("messageRead", async ({ _id: messageId, receiverId }) => {
+      try {
+        const updatedMessage = await Message.findByIdAndUpdate(
+          messageId,
+          { read: true },
+          { new: true }
+        );
+
+        if (!updatedMessage) {
+          console.log("Message not found!");
+          return;
+        }
+
+        io.to(receiverId).emit("messageRead", { id: messageId });
+
+      } catch (error) {
+        console.error("Error updating message read status:", error);
+      }
     });
+
 
     socket.on("deleteMessage", ({ messageId, receiverId }) => {
-      // Send delete info directly to receiver
-      socket.to(receiverId).emit("messageDeleted", { messageId });
+      if (messageId && receiverId) {
+        io.to(receiverId).emit("messageDeleted", { messageId });
+      }
     });
 
-    socket.on('disconnect', () => {
+    // GROUP CHAT SOCKETS
+    socket.on("joinGroup", ({ groupId }) => {
+      if (!groupId) return;
+      socket.join(groupId);
+      connectedGroups[groupId] = socket.id;
+      console.log(`👤 User ${groupId} joined _______________`);
+    });
+
+    socket.on("sentGroupMessage", async (groupMsg) => {
+      console.log("Group message sent)))))))))))))))))):", groupMsg);
+      const { senderId, groupId, newMessage, messageId } = groupMsg;
+      if (!groupId || !senderId || !newMessage) {
+        console.error("Invalid message data: missing receiverId or senderId");
+        return;
+      }
+
+      try {
+        const sender = await User.findById(senderId).select('firstName email');
+        if (!sender) {
+          console.error("Sender not found:", senderId);
+          return;
+        }
+
+        // Now create final message format
+        const populatedMsg = {
+          _id: messageId,
+          senderId: {
+            _id: sender._id,
+            firstName: sender.firstName,
+            email: sender.email
+          },
+          groupId,
+          message: newMessage,
+          timestamp: new Date().toISOString(),
+        };
+
+        console.log("Populated message:", populatedMsg);
+        // Emit message only to the intended receiver
+        io.to(groupId).emit("receiveGroupMessage", populatedMsg);
+
+      }
+      catch (err) {
+        console.error("Error saving group message:", err);
+      }
+    });
+
+
+
+
+    // Update Board Task Status in Real-Time
+    socket.on("update-task-status", async ({ boardId, newStatus }) => {
+      try {
+        const updatedBoard = await Board.findByIdAndUpdate(
+          boardId,
+          { status: newStatus, updatedAt: new Date() },
+          { new: true }
+        ).populate("members comments.user attachments.user");
+
+        if (!updatedBoard) {
+          console.error(`❌ Board not found: ${boardId}`);
+          return;
+        }
+
+        // Notify all members about the update
+        updatedBoard.members.forEach((member) => {
+          const socketId = connectedUsers[member._id.toString()];
+          if (socketId) {
+            io.to(socketId).emit("boardStatusUpdated", updatedBoard);
+          }
+        });
+      } catch (err) {
+        console.error("❌ Error updating board status:", err);
+      }
+    });
+
+    socket.on("disconnect", () => {
       for (const [userId, sId] of Object.entries(connectedUsers)) {
         if (sId === socket.id) {
           delete connectedUsers[userId];
+          console.log(`🚪 User ${userId} disconnected`);
           break;
         }
       }

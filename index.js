@@ -1,12 +1,13 @@
 import express from 'express';
-import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import http from 'http';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 
 // Custom modules
 import connectDB from './config/db.js';
 import { setupSocket } from './sockets/socket.js';
+import { meetSocketSetUp } from './sockets/meetSocket.js';
 
 // Routes
 import userRoutes from './routes/userRoutes.js';
@@ -15,6 +16,9 @@ import messageRoutes from './routes/messageRoutes.js';
 import documentRoutes from './routes/documentRoutes.js';
 import boardRoutes from './routes/boardRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
+import groupMessageRoutes from './routes/groupMessageRoutes.js';
+import hmsRoutes from './routes/hmsRoutes.js';
+
 
 dotenv.config();
 connectDB();
@@ -24,11 +28,15 @@ const server = http.createServer(app);
 
 // Socket.IO setup
 setupSocket(server);
+meetSocketSetUp(server);
 
 app.use(express.json());
 app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  credentials: true, // allow cookies
 }));
+app.use(cookieParser());
+
 
 // API Routes
 app.use("/api", userRoutes);
@@ -37,6 +45,8 @@ app.use("/api/boards", boardRoutes);
 app.use('/api/teams', teamRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api', groupMessageRoutes);
+app.use("/api/hms", hmsRoutes);
 
 // Root route
 app.get('/', (req, res) => {

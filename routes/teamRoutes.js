@@ -7,6 +7,7 @@ import {
   addMemberToTeam,
   getUserTeams,
   getUserTeamsByEmail, 
+  getTeamsByEmailForGroupChat
 } from "../controllers/teamController.js";
 
 const router = express.Router();
@@ -19,5 +20,6 @@ router.get("/user/teams/email/:userEmail", getUserTeamsByEmail); // Get user's t
 router.put("/:id", updateTeam); // Update team
 router.delete("/:id", deleteTeam); // Delete team
 router.post("/addMember", addMemberToTeam); // Add member to team
+router.get("/get-teams-by-email/:userEmail", getTeamsByEmailForGroupChat); // Add member to team
 
 export default router;
