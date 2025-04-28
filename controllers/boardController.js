@@ -1,5 +1,6 @@
 import Board from '../models/boardModel.js';
 import User from '../models/userModel.js';
+import Team from '../models/teamModel.js';
 
 export const createBoard = async (req, res) => {
   try {
@@ -162,5 +163,58 @@ export const getBoardsByUserEmail = async (req, res) => {
   } catch (error) {
     console.error('Error fetching boards by user email:', error);
     res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+};
+
+export const getUserOverallAndTeamTaskSummary = async (req, res) => {
+  const { email } = req.params;
+  console.log(`Fetching overall and team task summary for user with email: ${email}`);
+
+  try {
+      const user = await User.findOne({ email });
+      if (!user) {
+          return res.status(404).json({ message: 'User not found' });
+      }
+      const userId = user._id;
+
+      // Overall User Task Summary
+      const userBoards = await Board.find({ members: userId });
+      const overallTotalTasks = userBoards.length;
+      const overallTodoTasks = userBoards.filter(board => board.status === 'todo').length;
+      const overallInProgressTasks = userBoards.filter(board => board.status === 'in-progress').length;
+      const overallDoneTasks = userBoards.filter(board => board.status === 'done').length;
+
+      // Team-Specific Summary
+      const teams = await Team.find({
+          $or: [
+              { creator: userId },
+              { members: userId }
+          ]
+      }).populate('members');
+
+      const teamSummaries = [];
+      for (const team of teams) {
+          const teamBoards = await Board.find({ teamId: team._id });
+          teamSummaries.push({
+              teamName: team.name,
+              teamId: team._id,
+              totalMembers: team.members.length,
+              totalTasks: teamBoards.length,
+          });
+      }
+
+      res.status(200).json({
+          overallSummary: {
+              totalTasks: overallTotalTasks,
+              todoTasks: overallTodoTasks,
+              inProgressTasks: overallInProgressTasks,
+              doneTasks: overallDoneTasks,
+          },
+          teamSummaries: teamSummaries,
+      });
+
+  } catch (error) {
+      console.error('Error fetching user overall and team task summary:', error);
+      res.status(500).json({ message: 'Server Error', error: error.message });
   }
 };
