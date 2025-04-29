@@ -26,7 +26,7 @@ io.on("connection", (socket) => {
                 "https://api.100ms.live/v2/rooms",
                 {
                     name: `room-${socket.id}-${Date.now()}`,
-                    description: "Dynamic room for NexCall",
+                    description: "Dynamic room for Xynexa",
                     template_id: process.env.HMS_TEMPLATE_ID,
                 },
                 {
@@ -52,7 +52,6 @@ io.on("connection", (socket) => {
             );
             
             const roomCode = roomCodeResponse.data.data.find(code => code.enabled)?.code;
-            console.log("Room Code =>>>>>>>>>>>>>>>>>>>>>>>(((::::", roomCode);
 
             
             // Store mapping of roomCode to roomId
@@ -62,7 +61,7 @@ io.on("connection", (socket) => {
             roomUsers[roomCode] = [{ socketId: socket.id, ...userData }];
             const { name, timestamp } = userData;
             socket.emit("RoomCreated", roomCode, name, timestamp);
-            // console.log("Room Created: ", roomCode);
+           
 
         } catch (error) {
             console.error("Error creating 100ms room:", error);
@@ -130,7 +129,7 @@ io.on("connection", (socket) => {
         };
         io.to(room).emit("receiveMessage", { sender: socket.id, senderName, photo, message });
 
-        const messagesCollection = client.db("NexCall").collection('messages');
+        const messagesCollection = client.db("Xynexa").collection('messages');
         await messagesCollection.insertOne(messageData);
     });
 
