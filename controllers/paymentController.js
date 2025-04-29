@@ -7,32 +7,37 @@ dotenv.config();
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-
 export const createPaymentIntent = async (req, res) => {
   const { amount } = req.body;
 
-  if (!amount || typeof amount !== "number") {
-    return res.status(400).json({ error: "Invalid amount" });
+  if (!amount || typeof amount !== 'number' || amount <= 0) {
+    return res.status(400).json({ error: 'Amount must be a positive number' });
   }
 
   try {
+    const amountInCents = parseInt(amount * 100);
+
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(amount * 100), 
-      currency: "usd",
-      payment_method_types: ["card"],
+      amount: amountInCents,
+      currency: 'usd',
+      payment_method_types: ['card'],
     });
+
     res.status(200).json({ clientSecret: paymentIntent.client_secret });
   } catch (error) {
-    console.error("Stripe Error:", error.message);
-    res.status(500).json({ error: "Payment intent creation failed" });
+    console.error('Stripe Error:', {
+      message: error.message,
+      type: error.type,
+      code: error.code,
+      stack: error.stack,
+    });
+    res.status(500).json({ error: 'Payment intent creation failed', details: error.message });
   }
 };
 
 
-
 export const paymentInfoUpdate = async (req, res) => {
   const { userId, price, transactionId, plan } = req.body;
-console.log("user id >>>jasd;kfj ", userId);
   try {
     // Validate user existence
     const user = await User.findById(userId);
@@ -52,7 +57,12 @@ console.log("user id >>>jasd;kfj ", userId);
     user.package = plan;
     await user.save();
 
-    res.status(201).json({ message: "Payment recorded and user updated", payment: newPayment });
+    res.status(201).json({ 
+      success: true, 
+      message: "Payment recorded and user updated", 
+      payment: newPayment 
+    });
+    
   } catch (error) {
     console.error("Payment save error:", error.message);
     res.status(500).json({ error: "Internal server error" });
