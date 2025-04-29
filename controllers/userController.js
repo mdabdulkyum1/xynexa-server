@@ -198,8 +198,6 @@ export const getUserByEmail = async (req, res) => {
 export const updateUserPackageByEmail = async (req, res) => {
   try {
     const { _id, packageName } = req.body;
-   console.log(_id, packageName)
-    
 
     const updatedUser = await User.findOneAndUpdate(
       { _id },
