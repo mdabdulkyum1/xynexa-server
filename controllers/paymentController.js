@@ -1,43 +1,60 @@
-// controllers/paymentController.js
-import Stripe from "stripe";
-import Payment from "../models/paymentModel.js";
 import dotenv from 'dotenv';
+import Stripe from "stripe";
+import User from "../models/userModel.js";
+import Payment from "../models/paymentModel.js";
+
 dotenv.config();
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 
-// @desc   Create Stripe Payment Intent
-// @route  POST /api/payments/create-intent
-// @access Public
-export  const createPaymentIntent = async (req, res) => {
-  const { name, email, amount } = req.body;
+export const createPaymentIntent = async (req, res) => {
+  const { amount } = req.body;
+
+  if (!amount || typeof amount !== "number") {
+    return res.status(400).json({ error: "Invalid amount" });
+  }
 
   try {
-    // Step 1: Validate and Save to DB
-    const payment = new Payment({ name, email, amount });
-    await payment.validate(); // Mongoose validation
-    await payment.save();
-
-    // Step 2: Create Stripe Payment Intent
     const paymentIntent = await stripe.paymentIntents.create({
-      amount,
+      amount: Math.round(amount * 100), 
       currency: "usd",
-      receipt_email: email,
-      metadata: {
-        paymentId: payment._id.toString(),
-      },
+      payment_method_types: ["card"],
     });
-
-    // Step 3: Update with Stripe ID
-    payment.stripePaymentId = paymentIntent.id;
-    await payment.save();
-
-    res.status(200).json({ clientSecret: paymentIntent.client_secret, paymentIntent });
+    res.status(200).json({ clientSecret: paymentIntent.client_secret });
   } catch (error) {
     console.error("Stripe Error:", error.message);
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: "Payment intent creation failed" });
   }
 };
 
 
+
+export const paymentInfoUpdate = async (req, res) => {
+  const { userId, price, transactionId, plan } = req.body;
+console.log("user id >>>jasd;kfj ", userId);
+  try {
+    // Validate user existence
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    // Create new payment record
+    const newPayment = new Payment({
+      user: user._id,
+      amount: Math.round(price * 100), // Store as cents if using Stripe logic
+      stripePaymentId: transactionId,
+      status: "succeeded",
+    });
+
+    await newPayment.save();
+
+    // Optionally update user plan/package
+    user.package = plan;
+    await user.save();
+
+    res.status(201).json({ message: "Payment recorded and user updated", payment: newPayment });
+  } catch (error) {
+    console.error("Payment save error:", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
