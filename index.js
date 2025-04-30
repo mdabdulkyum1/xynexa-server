@@ -6,6 +6,8 @@ import cookieParser from 'cookie-parser';
 
 // Custom modules
 import connectDB from './config/db.js';
+
+import { initSocket } from './sockets/index.js';
 import { setupSocket } from './sockets/socket.js';
 import { meetSocketSetUp } from './sockets/meetSocket.js';
 
@@ -20,6 +22,7 @@ import groupMessageRoutes from './routes/groupMessageRoutes.js';
 import hmsRoutes from './routes/hmsRoutes.js';
 
 
+
 dotenv.config();
 connectDB();
 
@@ -27,8 +30,9 @@ const app = express();
 const server = http.createServer(app);
 
 // Socket.IO setup
-setupSocket(server);
-meetSocketSetUp(server);
+const io = initSocket(server);
+setupSocket(io);
+meetSocketSetUp(io);
 
 app.use(express.json());
 app.use(cors({
