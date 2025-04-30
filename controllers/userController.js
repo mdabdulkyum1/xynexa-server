@@ -31,18 +31,18 @@ export const registerUser = async (req, res) => {
             email,
             imageUrl,
             role: "member",
-            status: "Online", // Set user to Online upon registration
+            status: "Online", 
             lastActive: new Date(),
         });
 
-        // Save user to the database
+       
         await newUser.save();
 
         return res.status(201).json({ message: "User registered successfully", user: newUser });
     } catch (error) {
         console.error("Error registering user:", error);
 
-        // Handle MongoDB duplicate key error
+        
         if (error.code === 11000) {
             return res.status(400).json({ message: `Duplicate key error: ${JSON.stringify(error.keyValue)}` });
         }
