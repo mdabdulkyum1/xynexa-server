@@ -10,6 +10,7 @@ import {
     addAttachmentToBoard,
     getBoardsByTeamId,
     getBoardsByUserEmail,
+    getUserOverallAndTeamTaskSummary,
 } from '../controllers/boardController.js';
 
 const router = express.Router();
@@ -41,5 +42,7 @@ router.post('/attachments', addAttachmentToBoard);
 // Get boards by team ID
 router.get('/team/:teamId', getBoardsByTeamId);
 router.get('/task/email/:email', getBoardsByUserEmail);
+router.get('/task/user/full-summary/:email', getUserOverallAndTeamTaskSummary);
 
-export default router;
+
+export default router; 
