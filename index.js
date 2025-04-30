@@ -44,7 +44,7 @@ app.use("/api", messageRoutes);
 app.use("/api/boards", boardRoutes);
 app.use('/api/teams', teamRoutes);
 app.use('/api/documents', documentRoutes);
-app.use('/api/payments', paymentRoutes);
+app.use('/api', paymentRoutes);
 app.use('/api', groupMessageRoutes);
 app.use("/api/hms", hmsRoutes);
 
