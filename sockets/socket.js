@@ -87,7 +87,7 @@ export function setupSocket(io) {
       }
 
       try {
-        const sender = await User.findById(senderId).select('firstName email');
+        const sender = await User.findById(senderId).select('firstName email imageUrl');
         if (!sender) {
           console.error("Sender not found:", senderId);
           return;
@@ -99,7 +99,8 @@ export function setupSocket(io) {
           senderId: {
             _id: sender._id,
             firstName: sender.firstName,
-            email: sender.email
+            email: sender.email,
+            imageUrl: sender?.imageUrl,
           },
           groupId,
           message: newMessage,
