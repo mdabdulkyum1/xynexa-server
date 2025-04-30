@@ -1,15 +1,10 @@
-import { Server } from "socket.io";
-import Board from "../models/boardModel.js"; // Import the Board model
-import Message from '../models/messageModel.js'; // Import the Message model
-import User from '../models/userModel.js'; // Import the Message model
 
-export function setupSocket(server) {
-  const io = new Server(server, {
-    cors: {
-      origin: process.env.CLIENT_URL || "http://localhost:3000",
-      methods: ["GET", "POST"],
-    },
-  });
+import Board from "../models/boardModel.js"; 
+import Message from '../models/messageModel.js'; 
+import User from '../models/userModel.js'; 
+
+export function setupSocket(io) {
+
 
   const connectedUsers = {};
 
