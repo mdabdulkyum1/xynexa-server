@@ -1,24 +1,50 @@
 
-import Board from "../models/boardModel.js"; 
-import Message from '../models/messageModel.js'; 
-import User from '../models/userModel.js'; 
+import Board from "../models/boardModel.js";
+import Message from "../models/messageModel.js";
+import User from "../models/userModel.js";
 
 export function setupSocket(io) {
-
 
   const connectedUsers = {};
 
   const connectedGroups = {};
 
-  io.on("connection", (socket) => {
-    console.log("🔌 New client connected");
 
+  const onlineUsers = new Map(); 
+
+  const broadcastOnlineUsers = () => {
+    const users = Array.from(onlineUsers.keys());
+    io.emit("online-users", users);
+  };
+
+  io.on("connection", (socket) => {
+    console.log("🔌 New client connected:", socket.id);
+
+    /* =========================
+       USER JOIN / ONLINE SYSTEM
+       ======================= */
     socket.on("join", ({ userId }) => {
       if (!userId) return;
+
       socket.join(userId);
+
       connectedUsers[userId] = socket.id;
-      console.log(`👤 User ${userId} joined`);
+
+      onlineUsers.set(userId, socket.id);
+
+      console.log(`👤 User ${userId} joined & is ONLINE`);
+
+      io.emit("user-online-status", {
+        userId,
+        status: "online",
+      });
+
+      broadcastOnlineUsers();
     });
+
+    /* =======================
+       PRIVATE CHAT SOCKETS
+       ======================= */
 
     socket.on("sendMessage", (message) => {
       const { receiverId, senderId } = message;
@@ -26,7 +52,7 @@ export function setupSocket(io) {
         console.error("Invalid message data: missing receiverId or senderId");
         return;
       }
-      // Emit message only to the intended receiver
+
       io.to(receiverId).emit("receiveMessage", message);
     });
 
@@ -42,7 +68,9 @@ export function setupSocket(io) {
       }
     });
 
-
+    /* =======================
+       MESSAGE READ / DELETE
+       ======================= */
 
     socket.on("messageRead", async ({ _id: messageId, receiverId }) => {
       try {
@@ -58,12 +86,10 @@ export function setupSocket(io) {
         }
 
         io.to(receiverId).emit("messageRead", { id: messageId });
-
       } catch (error) {
         console.error("Error updating message read status:", error);
       }
     });
-
 
     socket.on("deleteMessage", ({ messageId, receiverId }) => {
       if (messageId && receiverId) {
@@ -71,16 +97,19 @@ export function setupSocket(io) {
       }
     });
 
-    // GROUP CHAT SOCKETS
+    /* =======================
+       GROUP CHAT SOCKETS
+       ======================= */
+
     socket.on("joinGroup", ({ groupId }) => {
       if (!groupId) return;
       socket.join(groupId);
       connectedGroups[groupId] = socket.id;
-      console.log(`👤 User ${groupId} joined _______________`);
+      console.log(`👥 User joined group ${groupId}`);
     });
 
     socket.on("sentGroupMessage", async (groupMsg) => {
-      console.log("Group message sent)))))))))))))))))):", groupMsg);
+      console.log("Group message sent:", groupMsg);
       const { senderId, groupId, newMessage, messageId } = groupMsg;
       if (!groupId || !senderId || !newMessage) {
         console.error("Invalid message data: missing receiverId or senderId");
@@ -88,13 +117,14 @@ export function setupSocket(io) {
       }
 
       try {
-        const sender = await User.findById(senderId).select('firstName email imageUrl');
+        const sender = await User.findById(senderId).select(
+          "firstName email imageUrl"
+        );
         if (!sender) {
           console.error("Sender not found:", senderId);
           return;
         }
 
-        // Now create final message format
         const populatedMsg = {
           _id: messageId,
           senderId: {
@@ -102,7 +132,6 @@ export function setupSocket(io) {
             firstName: sender.firstName,
             email: sender.email,
             imageUrl: sender.imageUrl,
-
           },
           groupId,
           message: newMessage,
@@ -110,19 +139,17 @@ export function setupSocket(io) {
         };
 
         console.log("Populated message:", populatedMsg);
-        // Emit message only to the intended receiver
-        io.to(groupId).emit("receiveGroupMessage", populatedMsg);
 
-      }
-      catch (err) {
+        io.to(groupId).emit("receiveGroupMessage", populatedMsg);
+      } catch (err) {
         console.error("Error saving group message:", err);
       }
     });
 
+    /* =======================
+       BOARD STATUS UPDATE
+       ======================= */
 
-
-
-    // Update Board Task Status in Real-Time
     socket.on("update-task-status", async ({ boardId, newStatus }) => {
       try {
         const updatedBoard = await Board.findByIdAndUpdate(
@@ -136,7 +163,6 @@ export function setupSocket(io) {
           return;
         }
 
-        // Notify all members about the update
         updatedBoard.members.forEach((member) => {
           const socketId = connectedUsers[member._id.toString()];
           if (socketId) {
@@ -148,13 +174,55 @@ export function setupSocket(io) {
       }
     });
 
+    /* =======================
+       MANUAL OFFLINE (LOGOUT)
+       ======================= */
+
+    socket.on("user-offline", ({ userId }) => {
+      if (!userId) return;
+
+      // map থেকে remove
+      onlineUsers.delete(userId);
+      delete connectedUsers[userId];
+
+      console.log(`🚪 User ${userId} went OFFLINE (logout)`);
+
+      io.emit("user-online-status", {
+        userId,
+        status: "offline",
+      });
+
+      broadcastOnlineUsers();
+    });
+
+    /* =======================
+       DISCONNECT HANDLE
+       ======================= */
+
     socket.on("disconnect", () => {
+      console.log("🔌 Client disconnected:", socket.id);
+
+      let disconnectedUserId = null;
+
       for (const [userId, sId] of Object.entries(connectedUsers)) {
         if (sId === socket.id) {
+          disconnectedUserId = userId;
           delete connectedUsers[userId];
-          console.log(`🚪 User ${userId} disconnected`);
           break;
         }
+      }
+
+      if (disconnectedUserId) {
+        onlineUsers.delete(disconnectedUserId);
+
+        console.log(`🚪 User ${disconnectedUserId} is OFFLINE (disconnect)`);
+
+        io.emit("user-online-status", {
+          userId: disconnectedUserId,
+          status: "offline",
+        });
+
+        broadcastOnlineUsers();
       }
     });
   });
