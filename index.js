@@ -20,6 +20,7 @@ import boardRoutes from './routes/boardRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import groupMessageRoutes from './routes/groupMessageRoutes.js';
 import hmsRoutes from './routes/hmsRoutes.js';
+import startKeepAlive from './services/keepAlive.js';
 
 
 
@@ -56,9 +57,13 @@ app.use("/api/hms", hmsRoutes);
 app.get('/', (req, res) => {
     res.send('Xynexa Server is running');
 });
+app.get('/api/v1/health', (req, res) => {
+  res.json({ status: 'ok', time: new Date().toISOString() });
+});
 
 // Start server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
+    startKeepAlive();
 });
