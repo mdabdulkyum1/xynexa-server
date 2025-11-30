@@ -1,19 +1,16 @@
-
 import Board from "../models/boardModel.js";
 import Message from "../models/messageModel.js";
 import User from "../models/userModel.js";
 
 export function setupSocket(io) {
-
   const connectedUsers = {};
 
   const connectedGroups = {};
 
-
-  const onlineUsers = new Map(); 
+  const onlineUsers = new Map();
 
   const broadcastOnlineUsers = () => {
-    const users = Array.from(onlineUsers.keys());
+    const users = Array.from(onlineUsers.keys()); 
     io.emit("online-users", users);
   };
 
@@ -23,19 +20,19 @@ export function setupSocket(io) {
     /* =========================
        USER JOIN / ONLINE SYSTEM
        ======================= */
-    socket.on("join", ({ userId }) => {
-      if (!userId) return;
+    socket.on("join", ({ email }) => {
+      if (!email) return;
 
-      socket.join(userId);
+      socket.join(email);
 
-      connectedUsers[userId] = socket.id;
+      connectedUsers[email] = socket.id;
 
-      onlineUsers.set(userId, socket.id);
+      onlineUsers.set(email, socket.id);
 
-      console.log(`👤 User ${userId} joined & is ONLINE`);
+      console.log(`👤 User ${email} joined & is ONLINE`);
 
       io.emit("user-online-status", {
-        userId,
+        email,
         status: "online",
       });
 
@@ -47,24 +44,25 @@ export function setupSocket(io) {
        ======================= */
 
     socket.on("sendMessage", (message) => {
-      const { receiverId, senderId } = message;
-      if (!receiverId || !senderId) {
-        console.error("Invalid message data: missing receiverId or senderId");
+      const { receiverEmail, senderEmail } = message;
+
+      if (!receiverEmail || !senderEmail) {
+        console.error("Invalid message data: missing receiverEmail or senderEmail");
         return;
       }
 
-      io.to(receiverId).emit("receiveMessage", message);
+      io.to(receiverEmail).emit("receiveMessage", message);
     });
 
-    socket.on("typing", ({ senderId, receiverId }) => {
-      if (receiverId && senderId) {
-        io.to(receiverId).emit("typing", { senderId });
+    socket.on("typing", ({ senderEmail, receiverEmail }) => {
+      if (receiverEmail && senderEmail) {
+        io.to(receiverEmail).emit("typing", { senderEmail });
       }
     });
 
-    socket.on("stopTyping", ({ receiverId }) => {
-      if (receiverId) {
-        io.to(receiverId).emit("stopTyping");
+    socket.on("stopTyping", ({ receiverEmail }) => {
+      if (receiverEmail) {
+        io.to(receiverEmail).emit("stopTyping");
       }
     });
 
@@ -72,7 +70,7 @@ export function setupSocket(io) {
        MESSAGE READ / DELETE
        ======================= */
 
-    socket.on("messageRead", async ({ _id: messageId, receiverId }) => {
+    socket.on("messageRead", async ({ _id: messageId, receiverEmail }) => {
       try {
         const updatedMessage = await Message.findByIdAndUpdate(
           messageId,
@@ -85,15 +83,15 @@ export function setupSocket(io) {
           return;
         }
 
-        io.to(receiverId).emit("messageRead", { id: messageId });
+        io.to(receiverEmail).emit("messageRead", { id: messageId });
       } catch (error) {
         console.error("Error updating message read status:", error);
       }
     });
 
-    socket.on("deleteMessage", ({ messageId, receiverId }) => {
-      if (messageId && receiverId) {
-        io.to(receiverId).emit("messageDeleted", { messageId });
+    socket.on("deleteMessage", ({ messageId, receiverEmail }) => {
+      if (messageId && receiverEmail) {
+        io.to(receiverEmail).emit("messageDeleted", { messageId });
       }
     });
 
@@ -164,7 +162,11 @@ export function setupSocket(io) {
         }
 
         updatedBoard.members.forEach((member) => {
-          const socketId = connectedUsers[member._id.toString()];
+          
+          const email = member.email;
+          if (!email) return;
+
+          const socketId = connectedUsers[email];
           if (socketId) {
             io.to(socketId).emit("boardStatusUpdated", updatedBoard);
           }
@@ -178,17 +180,16 @@ export function setupSocket(io) {
        MANUAL OFFLINE (LOGOUT)
        ======================= */
 
-    socket.on("user-offline", ({ userId }) => {
-      if (!userId) return;
+    socket.on("user-offline", ({ email }) => {
+      if (!email) return;
 
-      // map থেকে remove
-      onlineUsers.delete(userId);
-      delete connectedUsers[userId];
+      onlineUsers.delete(email);
+      delete connectedUsers[email];
 
-      console.log(`🚪 User ${userId} went OFFLINE (logout)`);
+      console.log(`🚪 User ${email} went OFFLINE (logout)`);
 
       io.emit("user-online-status", {
-        userId,
+        email,
         status: "offline",
       });
 
@@ -202,23 +203,23 @@ export function setupSocket(io) {
     socket.on("disconnect", () => {
       console.log("🔌 Client disconnected:", socket.id);
 
-      let disconnectedUserId = null;
+      let disconnectedEmail = null;
 
-      for (const [userId, sId] of Object.entries(connectedUsers)) {
+      for (const [email, sId] of Object.entries(connectedUsers)) {
         if (sId === socket.id) {
-          disconnectedUserId = userId;
-          delete connectedUsers[userId];
+          disconnectedEmail = email;
+          delete connectedUsers[email];
           break;
         }
       }
 
-      if (disconnectedUserId) {
-        onlineUsers.delete(disconnectedUserId);
+      if (disconnectedEmail) {
+        onlineUsers.delete(disconnectedEmail);
 
-        console.log(`🚪 User ${disconnectedUserId} is OFFLINE (disconnect)`);
+        console.log(`🚪 User ${disconnectedEmail} is OFFLINE (disconnect)`);
 
         io.emit("user-online-status", {
-          userId: disconnectedUserId,
+          email: disconnectedEmail,
           status: "offline",
         });
 
