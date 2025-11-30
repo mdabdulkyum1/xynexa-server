@@ -1,0 +1,1235 @@
+{
+	"info": {
+		"_postman_id": "12345678-1234-1234-1234-123456789abc",
+		"name": "Xynexa Server API",
+		"description": "Complete API documentation for Xynexa Server - A collaborative workspace platform with team management, messaging, task boards, documents, and real-time features.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "12345678"
+	},
+	"item": [
+		{
+			"name": "User Management",
+			"item": [
+				{
+					"name": "Register User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"clerkId\": \"user_12345\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"imageUrl\": \"https://example.com/avatar.jpg\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"register"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"clerkId\": \"user_12345\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"imageUrl\": \"https://example.com/avatar.jpg\"\n}"
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"message\": \"User registered successfully\",\n  \"user\": {\n    \"_id\": \"60d21b4667d0d8992e610c85\",\n    \"clerkId\": \"user_12345\",\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"imageUrl\": \"https://example.com/avatar.jpg\",\n    \"role\": \"member\",\n    \"status\": \"Online\",\n    \"lastActive\": \"2023-06-23T10:30:00.000Z\"\n  }\n}"
+						}
+					]
+				},
+				{
+					"name": "Login User",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"clerkId\": \"user_12345\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/loginUser",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"loginUser"
+							]
+						}
+					}
+				},
+				{
+					"name": "Logout User",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"clerkId\": \"user_12345\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/offlineUser",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"offlineUser"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Online Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/online/users/:userEmail",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"online",
+								"users",
+								":userEmail"
+							],
+							"variable": [
+								{
+									"key": "userEmail",
+									"value": "john.doe@example.com"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get User by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "user_12345"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get All Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get User by Email",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/email/:email",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"email",
+								":email"
+							],
+							"variable": [
+								{
+									"key": "email",
+									"value": "john.doe@example.com"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update User Package",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"_id\": \"60d21b4667d0d8992e610c85\",\n  \"packageName\": \"premium\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/packageUpdate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"packageUpdate"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Team Management",
+			"item": [
+				{
+					"name": "Create Team",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Development Team\",\n  \"description\": \"Frontend and Backend development team\",\n  \"createdBy\": \"60d21b4667d0d8992e610c85\",\n  \"members\": [\"60d21b4667d0d8992e610c85\"]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/teams/create",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"teams",
+								"create"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Team by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/teams/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"teams",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "60d21b4667d0d8992e610c86"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get User Teams by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/teams/user/teams/:userId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"teams",
+								"user",
+								"teams",
+								":userId"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "60d21b4667d0d8992e610c85"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get User Teams by Email",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/teams/user/teams/email/:userEmail",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"teams",
+								"user",
+								"teams",
+								"email",
+								":userEmail"
+							],
+							"variable": [
+								{
+									"key": "userEmail",
+									"value": "john.doe@example.com"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Team",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Updated Development Team\",\n  \"description\": \"Updated team description\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/teams/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"teams",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "60d21b4667d0d8992e610c86"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Team",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/teams/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"teams",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "60d21b4667d0d8992e610c86"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Add Member to Team",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"teamId\": \"60d21b4667d0d8992e610c86\",\n  \"userId\": \"60d21b4667d0d8992e610c87\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/teams/addMember",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"teams",
+								"addMember"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Teams for Group Chat",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/teams/get-teams-by-email/:userEmail",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"teams",
+								"get-teams-by-email",
+								":userEmail"
+							],
+							"variable": [
+								{
+									"key": "userEmail",
+									"value": "john.doe@example.com"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Messaging",
+			"item": [
+				{
+					"name": "Send Message",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"senderId\": \"60d21b4667d0d8992e610c85\",\n  \"receiverId\": \"60d21b4667d0d8992e610c87\",\n  \"content\": \"Hello! How are you?\",\n  \"messageType\": \"text\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/messages/send",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"messages",
+								"send"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Messages",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/messages?senderId=60d21b4667d0d8992e610c85&receiverId=60d21b4667d0d8992e610c87",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"messages"
+							],
+							"query": [
+								{
+									"key": "senderId",
+									"value": "60d21b4667d0d8992e610c85"
+								},
+								{
+									"key": "receiverId",
+									"value": "60d21b4667d0d8992e610c87"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Mark Message as Read",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"messageId\": \"60d21b4667d0d8992e610c88\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/read",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"read"
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Message",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/messages/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"messages",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "60d21b4667d0d8992e610c88"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Group Messaging",
+			"item": [
+				{
+					"name": "Send Group Message",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"senderId\": \"60d21b4667d0d8992e610c85\",\n  \"groupId\": \"60d21b4667d0d8992e610c86\",\n  \"content\": \"Hello team! Meeting at 3 PM today.\",\n  \"messageType\": \"text\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/groupMessage/send",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"groupMessage",
+								"send"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Group Messages",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/groupMessage/:groupId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"groupMessage",
+								":groupId"
+							],
+							"variable": [
+								{
+									"key": "groupId",
+									"value": "60d21b4667d0d8992e610c86"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Board Management",
+			"item": [
+				{
+					"name": "Create Board",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Frontend Development Task\",\n  \"description\": \"Implement user authentication UI\",\n  \"status\": \"todo\",\n  \"priority\": \"high\",\n  \"assignedTo\": [\"60d21b4667d0d8992e610c85\"],\n  \"teamId\": \"60d21b4667d0d8992e610c86\",\n  \"createdBy\": \"60d21b4667d0d8992e610c85\",\n  \"dueDate\": \"2023-07-01T10:00:00.000Z\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/boards/create",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"boards",
+								"create"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Board by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/boards/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"boards",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "60d21b4667d0d8992e610c89"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Board",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Updated Frontend Development Task\",\n  \"description\": \"Updated description\",\n  \"status\": \"in-progress\",\n  \"priority\": \"medium\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/boards/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"boards",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "60d21b4667d0d8992e610c89"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Board",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/boards/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"boards",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "60d21b4667d0d8992e610c89"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Add Member to Board",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"boardId\": \"60d21b4667d0d8992e610c89\",\n  \"memberId\": \"60d21b4667d0d8992e610c87\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/boards/members",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"boards",
+								"members"
+							]
+						}
+					}
+				},
+				{
+					"name": "Add Comment to Board",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"boardId\": \"60d21b4667d0d8992e610c89\",\n  \"userId\": \"60d21b4667d0d8992e610c85\",\n  \"comment\": \"This task is progressing well. UI mockups are ready.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/boards/comments",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"boards",
+								"comments"
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Board Status",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"completed\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/boards/:boardId/status",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"boards",
+								":boardId",
+								"status"
+							],
+							"variable": [
+								{
+									"key": "boardId",
+									"value": "60d21b4667d0d8992e610c89"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Add Attachment to Board",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"boardId\": \"60d21b4667d0d8992e610c89\",\n  \"fileName\": \"ui-mockup.pdf\",\n  \"fileUrl\": \"https://example.com/files/ui-mockup.pdf\",\n  \"fileSize\": 1024000\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/boards/attachments",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"boards",
+								"attachments"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Boards by Team ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/boards/team/:teamId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"boards",
+								"team",
+								":teamId"
+							],
+							"variable": [
+								{
+									"key": "teamId",
+									"value": "60d21b4667d0d8992e610c86"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Boards by User Email",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/boards/task/email/:email",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"boards",
+								"task",
+								"email",
+								":email"
+							],
+							"variable": [
+								{
+									"key": "email",
+									"value": "john.doe@example.com"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get User Task Summary",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/boards/task/user/full-summary/:email",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"boards",
+								"task",
+								"user",
+								"full-summary",
+								":email"
+							],
+							"variable": [
+								{
+									"key": "email",
+									"value": "john.doe@example.com"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Document Management",
+			"item": [
+				{
+					"name": "Create Document",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Project Requirements\",\n  \"content\": \"This document contains the project requirements...\",\n  \"createdBy\": \"john.doe@example.com\",\n  \"teamId\": \"60d21b4667d0d8992e610c86\",\n  \"collaborators\": [\"jane.doe@example.com\"]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/documents/create",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"documents",
+								"create"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Documents by Email",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/documents/getAllDoc?email=john.doe@example.com",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"documents",
+								"getAllDoc"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": "john.doe@example.com"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Document by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/documents/document/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"documents",
+								"document",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "60d21b4667d0d8992e610c90"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Document",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Updated Project Requirements\",\n  \"content\": \"Updated document content...\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/documents/update/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"documents",
+								"update",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "60d21b4667d0d8992e610c90"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Document",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/documents/delete/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"documents",
+								"delete",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "60d21b4667d0d8992e610c90"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Payment Management",
+			"item": [
+				{
+					"name": "Create Payment Intent",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": 2999,\n  \"currency\": \"usd\",\n  \"customerEmail\": \"john.doe@example.com\",\n  \"packageType\": \"premium\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/create-payment-intent",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"create-payment-intent"
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Payment Info",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"paymentIntentId\": \"pi_1234567890\",\n  \"customerEmail\": \"john.doe@example.com\",\n  \"amount\": 2999,\n  \"currency\": \"usd\",\n  \"status\": \"succeeded\",\n  \"packageType\": \"premium\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/payments",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"payments"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "HMS (100ms) Integration",
+			"item": [
+				{
+					"name": "Generate HMS Token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"roomId\": \"room_12345\",\n  \"userId\": \"user_12345\",\n  \"role\": \"host\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/hms/generate-token",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"hms",
+								"generate-token"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Health Check",
+			"item": [
+				{
+					"name": "Server Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								""
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success Response",
+							"originalRequest": {
+								"method": "GET",
+								"header": []
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/html; charset=utf-8"
+								}
+							],
+							"cookie": [],
+							"body": "Xynexa Server is running"
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:5000",
+			"type": "string"
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
