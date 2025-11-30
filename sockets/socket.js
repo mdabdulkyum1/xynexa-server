@@ -1,16 +1,20 @@
+// sockets/setupSocket.js
+
 import Board from "../models/boardModel.js";
 import Message from "../models/messageModel.js";
 import User from "../models/userModel.js";
 
 export function setupSocket(io) {
+  // email -> socketId
   const connectedUsers = {};
 
   const connectedGroups = {};
 
+  // email -> socketId
   const onlineUsers = new Map();
 
   const broadcastOnlineUsers = () => {
-    const users = Array.from(onlineUsers.keys()); 
+    const users = Array.from(onlineUsers.keys()); // ["a@gmail.com", "b@gmail.com", ...]
     io.emit("online-users", users);
   };
 
@@ -20,20 +24,34 @@ export function setupSocket(io) {
     /* =========================
        USER JOIN / ONLINE SYSTEM
        ======================= */
-    socket.on("join", ({ email }) => {
+    socket.on("join", async ({ email }) => {
       if (!email) return;
 
+      // room নাম হিসেবে email ব্যবহার করছি
       socket.join(email);
 
       connectedUsers[email] = socket.id;
-
       onlineUsers.set(email, socket.id);
 
       console.log(`👤 User ${email} joined & is ONLINE`);
 
+      // DB তে Online + lastActive আপডেট
+      try {
+        await User.findOneAndUpdate(
+          { email },
+          {
+            status: "Online",
+            lastActive: new Date(),
+          },
+          { new: true }
+        );
+      } catch (err) {
+        console.error("Error updating user status to Online:", err);
+      }
+
       io.emit("user-online-status", {
         email,
-        status: "online",
+        status: "Online",
       });
 
       broadcastOnlineUsers();
@@ -47,10 +65,13 @@ export function setupSocket(io) {
       const { receiverEmail, senderEmail } = message;
 
       if (!receiverEmail || !senderEmail) {
-        console.error("Invalid message data: missing receiverEmail or senderEmail");
+        console.error(
+          "Invalid message data: missing receiverEmail or senderEmail"
+        );
         return;
       }
 
+      // এখন receiverId এর জায়গায় receiverEmail ধরছি
       io.to(receiverEmail).emit("receiveMessage", message);
     });
 
@@ -83,6 +104,7 @@ export function setupSocket(io) {
           return;
         }
 
+        // যাকে পাঠাবে সে এখন email রুম এ join থাকে
         io.to(receiverEmail).emit("messageRead", { id: messageId });
       } catch (error) {
         console.error("Error updating message read status:", error);
@@ -161,8 +183,8 @@ export function setupSocket(io) {
           return;
         }
 
+        // এখানে ধরে নিচ্ছি member model এ email আছে
         updatedBoard.members.forEach((member) => {
-          
           const email = member.email;
           if (!email) return;
 
@@ -180,7 +202,7 @@ export function setupSocket(io) {
        MANUAL OFFLINE (LOGOUT)
        ======================= */
 
-    socket.on("user-offline", ({ email }) => {
+    socket.on("user-offline", async ({ email }) => {
       if (!email) return;
 
       onlineUsers.delete(email);
@@ -188,9 +210,23 @@ export function setupSocket(io) {
 
       console.log(`🚪 User ${email} went OFFLINE (logout)`);
 
+      // DB তে Offline update
+      try {
+        await User.findOneAndUpdate(
+          { email },
+          {
+            status: "Offline",
+            lastActive: new Date(),
+          },
+          { new: true }
+        );
+      } catch (err) {
+        console.error("Error updating user status to Offline (logout):", err);
+      }
+
       io.emit("user-online-status", {
         email,
-        status: "offline",
+        status: "Offline",
       });
 
       broadcastOnlineUsers();
@@ -200,7 +236,7 @@ export function setupSocket(io) {
        DISCONNECT HANDLE
        ======================= */
 
-    socket.on("disconnect", () => {
+    socket.on("disconnect", async () => {
       console.log("🔌 Client disconnected:", socket.id);
 
       let disconnectedEmail = null;
@@ -218,9 +254,26 @@ export function setupSocket(io) {
 
         console.log(`🚪 User ${disconnectedEmail} is OFFLINE (disconnect)`);
 
+        // DB তে Offline update (auto disconnect)
+        try {
+          await User.findOneAndUpdate(
+            { email: disconnectedEmail },
+            {
+              status: "Offline",
+              lastActive: new Date(),
+            },
+            { new: true }
+          );
+        } catch (err) {
+          console.error(
+            "Error updating user status to Offline (disconnect):",
+            err
+          );
+        }
+
         io.emit("user-online-status", {
           email: disconnectedEmail,
-          status: "offline",
+          status: "Offline",
         });
 
         broadcastOnlineUsers();
