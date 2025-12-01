@@ -1,28 +1,20 @@
-
-
 import Board from "../models/boardModel.js";
 import Message from "../models/messageModel.js";
 import User from "../models/userModel.js";
 
 export function setupSocket(io) {
-  // userId -> socketId (chat, board, group)
-  const connectedUsers = {};
-
-  const connectedGroups = {};
-
-  // email -> socketId (online/offline tracking)
-  const onlineEmails = new Map();
+  const onlineEmails = new Map(); // email → socket.id
 
   const broadcastOnlineEmails = () => {
-    const emails = Array.from(onlineEmails.keys()); 
+    const emails = Array.from(onlineEmails.keys());
     io.emit("online-users", emails);
   };
 
   io.on("connection", (socket) => {
-    console.log("🔌 New client connected:", socket.id);
+    console.log("New client connected:", socket.id);
 
-    /* =========================
-       USER JOIN / ONLINE SYSTEM (email based)
+    /* =======================
+       1. USER JOIN / ONLINE (email based)
        ======================= */
     socket.on("join", async ({ email }) => {
       if (!email) return;
@@ -30,7 +22,7 @@ export function setupSocket(io) {
       socket.join(email);
       onlineEmails.set(email, socket.id);
 
-      console.log(`👤 User ${email} joined & is ONLINE`);
+      console.log(`User ${email} is ONLINE`);
 
       try {
         await User.findOneAndUpdate(
@@ -46,12 +38,16 @@ export function setupSocket(io) {
       broadcastOnlineEmails();
     });
 
+    /* =======================
+       2. USER OFFLINE (manual logout)
+       ======================= */
     socket.on("user-offline", async ({ email }) => {
       if (!email) return;
 
       onlineEmails.delete(email);
+      socket.leave(email);
 
-      console.log(`🚪 User ${email} went OFFLINE (logout)`);
+      console.log(`User ${email} went OFFLINE (logout)`);
 
       try {
         await User.findOneAndUpdate(
@@ -60,7 +56,7 @@ export function setupSocket(io) {
           { new: true }
         );
       } catch (err) {
-        console.error("Error updating user status to Offline (logout):", err);
+        console.error("Error updating user status to Offline:", err);
       }
 
       io.emit("user-online-status", { email, status: "Offline" });
@@ -68,16 +64,33 @@ export function setupSocket(io) {
     });
 
     /* =======================
-       PRIVATE CHAT SOCKETS (userId based)
+       3. JOIN USER ROOM 
+       ======================= */
+    socket.on("joinUserRoom", (userId) => {
+      if (!userId) return;
+      socket.join(userId);
+      console.log(`User joined private room: ${userId}`);
+    });
+
+    socket.on("leaveUserRoom", (userId) => {
+      if (!userId) return;
+      socket.leave(userId);
+      console.log(`User left private room: ${userId}`);
+    });
+
+    /* =======================
+       4. PRIVATE CHAT (userId based)
        ======================= */
     socket.on("sendMessage", (message) => {
-      const { receiverId, senderId } = message;
-      if (!receiverId || !senderId) return;
+      const { receiverId } = message;
+      if (!receiverId) return;
+
+      // এখানে receiverId রুমে জয়েন করা থাকলে মেসেজ পাবে
       io.to(receiverId).emit("receiveMessage", message);
     });
 
     socket.on("typing", ({ senderId, receiverId }) => {
-      if (receiverId && senderId) io.to(receiverId).emit("typing", { senderId });
+      if (receiverId) io.to(receiverId).emit("typing", { senderId });
     });
 
     socket.on("stopTyping", ({ receiverId }) => {
@@ -86,29 +99,33 @@ export function setupSocket(io) {
 
     socket.on("messageRead", async ({ _id: messageId, receiverId }) => {
       try {
-        const updatedMessage = await Message.findByIdAndUpdate(
+        const updated = await Message.findByIdAndUpdate(
           messageId,
           { read: true },
           { new: true }
         );
-        if (!updatedMessage) return;
-        io.to(receiverId).emit("messageRead", { id: messageId });
+        if (updated && receiverId) {
+          io.to(receiverId).emit("messageRead", { id: messageId });
+        }
       } catch (error) {
-        console.error("Error updating message read status:", error);
+        console.error("Error marking message as read:", error);
       }
     });
 
     socket.on("deleteMessage", ({ messageId, receiverId }) => {
-      if (messageId && receiverId) io.to(receiverId).emit("messageDeleted", { messageId });
+      if (messageId && receiverId) {
+        io.to(receiverId).emit("messageDeleted", { messageId });
+      }
     });
 
     /* =======================
-       GROUP CHAT SOCKETS (userId based)
+       5. GROUP CHAT
        ======================= */
     socket.on("joinGroup", ({ groupId }) => {
-      if (!groupId) return;
-      socket.join(groupId);
-      connectedGroups[groupId] = socket.id;
+      if (groupId) {
+        socket.join(groupId);
+        console.log(`User joined group: ${groupId}`);
+      }
     });
 
     socket.on("sentGroupMessage", async (groupMsg) => {
@@ -139,7 +156,7 @@ export function setupSocket(io) {
     });
 
     /* =======================
-       BOARD STATUS UPDATE (userId based)
+       6. BOARD STATUS UPDATE
        ======================= */
     socket.on("update-task-status", async ({ boardId, newStatus }) => {
       try {
@@ -152,8 +169,8 @@ export function setupSocket(io) {
         if (!updatedBoard) return;
 
         updatedBoard.members.forEach((member) => {
-          const socketId = connectedUsers[member._id.toString()];
-          if (socketId) io.to(socketId).emit("boardStatusUpdated", updatedBoard);
+          const memberId = member._id.toString();
+          io.to(memberId).emit("boardStatusUpdated", updatedBoard);
         });
       } catch (err) {
         console.error("Error updating board status:", err);
@@ -161,23 +178,24 @@ export function setupSocket(io) {
     });
 
     /* =======================
-       DISCONNECT HANDLE (email based for online/offline)
+       7. DISCONNECT (auto offline)
        ======================= */
     socket.on("disconnect", async () => {
-      console.log("🔌 Client disconnected:", socket.id);
+      console.log("Client disconnected:", socket.id);
 
       let disconnectedEmail = null;
 
-      for (const [email, sId] of Object.entries(Object.fromEntries(onlineEmails))) {
+      for (const [email, sId] of onlineEmails.entries()) {
         if (sId === socket.id) {
           disconnectedEmail = email;
           onlineEmails.delete(email);
+          socket.leave(email);
           break;
         }
       }
 
       if (disconnectedEmail) {
-        console.log(`🚪 User ${disconnectedEmail} is OFFLINE (disconnect)`);
+        console.log(`User ${disconnectedEmail} is OFFLINE (disconnect)`);
 
         try {
           await User.findOneAndUpdate(
@@ -186,7 +204,7 @@ export function setupSocket(io) {
             { new: true }
           );
         } catch (err) {
-          console.error("Error updating user status to Offline (disconnect):", err);
+          console.error("Error updating user status on disconnect:", err);
         }
 
         io.emit("user-online-status", { email: disconnectedEmail, status: "Offline" });
